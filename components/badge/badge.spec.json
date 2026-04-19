@@ -1,0 +1,114 @@
+{
+  "$schema": "../../schemas/component.schema.json",
+  "name": "Badge",
+  "version": "0.1.0",
+  "status": "experimental",
+  "category": "display",
+  "description": "A small visual label used to annotate or call out a status, count, or category. For interactive states or filtering, use Tag. For user-generated labels, use Chip.",
+
+  "props": {
+    "tone": {
+      "type": "enum",
+      "values": ["neutral", "info", "success", "warning", "danger"],
+      "default": "neutral",
+      "description": "Semantic meaning of the badge, drives color treatment.",
+      "guidance": {
+        "neutral":  "Default for non-semantic labels (categories, counts, generic metadata).",
+        "info":     "Informational callouts, new features, guidance.",
+        "success":  "Positive states: completed, verified, active, paid.",
+        "warning":  "Caution states: pending, needs review, attention required.",
+        "danger":   "Critical states: failed, expired, blocked, error."
+      }
+    },
+    "size": {
+      "type": "enum",
+      "values": ["sm", "md"],
+      "default": "md",
+      "description": "Physical size. Use sm in dense contexts like tables or cards."
+    },
+    "children": {
+      "type": "ReactNode",
+      "description": "Badge label. Keep under 2 words when possible."
+    }
+  },
+
+  "states": ["default"],
+
+  "tokens": {
+    "neutral.bg":  "color.slate.100",
+    "neutral.fg":  "color.slate.700",
+    "info.bg":     "color.blue.100",
+    "info.fg":     "color.blue.700",
+    "success.bg":  "color.green.100",
+    "success.fg":  "color.green.700",
+    "warning.bg":  "color.amber.100",
+    "warning.fg":  "color.amber.700",
+    "danger.bg":   "color.red.100",
+    "danger.fg":   "color.red.700",
+    "radius":      "radius.full",
+    "padding.sm":  "space.1 space.2",
+    "padding.md":  "space.1 space.3"
+  },
+
+  "accessibility": {
+    "role": "status",
+    "keyboard": [],
+    "requirements": [
+      "Color alone must not convey meaning — pair with text label",
+      "If badge communicates dynamic state changes, wrap in aria-live region in parent"
+    ],
+    "contrast": "4.5:1 for text against background"
+  },
+
+  "composition": {
+    "allowedChildren": ["text", "Icon"],
+    "forbiddenChildren": ["Button", "Link", "Input"],
+    "commonParents": ["TableCell", "Card.Header", "ListItem", "NavItem"]
+  },
+
+  "rules": {
+    "do": [
+      "Keep labels 1–2 words",
+      "Use tone that matches the semantic state (success for completed, not info)",
+      "Pair color with text — never rely on color alone"
+    ],
+    "dont": [
+      "Don't use as interactive button — use Tag instead",
+      "Don't use for long text or sentences",
+      "Don't combine multiple tones in one group without clear reason"
+    ]
+  },
+
+  "examples": [
+    {
+      "name": "Status in a table",
+      "code": "<Badge tone=\"success\">Active</Badge>",
+      "context": "User status column"
+    },
+    {
+      "name": "Warning label",
+      "code": "<Badge tone=\"warning\">Pending</Badge>",
+      "context": "Order awaiting review"
+    },
+    {
+      "name": "Neutral count",
+      "code": "<Badge size=\"sm\">12</Badge>",
+      "context": "Notification count"
+    }
+  ],
+
+  "antiPatterns": [
+    {
+      "bad":  "<Badge tone=\"danger\" onClick={handleClick}>Delete</Badge>",
+      "good": "<Button variant=\"destructive\" onClick={handleClick}>Delete</Button>",
+      "why":  "Badge is a passive label, not an action trigger. Clickable semantics require a Button."
+    }
+  ],
+
+  "related": {
+    "use_instead_when": [
+      { "component": "Tag",  "when": "label is interactive (filter, removable)" },
+      { "component": "Chip", "when": "label represents user-generated content" }
+    ]
+  }
+}

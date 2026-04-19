@@ -7,9 +7,9 @@
   "main": "index.js",
   "scripts": {
     "tokens:normalize": "tsx scripts/normalize-tokens.ts",
-    "tokens:generate":  "tsx style-dictionary.config.ts",
-    "tokens:build":     "pnpm tokens:normalize && pnpm tokens:generate",
-    "validate:specs":   "ajv validate -s schemas/component.schema.json -d 'components/**/*.spec.json'"
+    "tokens:generate": "tsx style-dictionary.config.ts",
+    "tokens:build": "pnpm tokens:normalize && pnpm tokens:generate",
+    "validate:specs": "ajv validate -s schemas/component.schema.json -d 'components/**/*.spec.json'"
   },
   "keywords": [],
   "author": "",
@@ -26,7 +26,7 @@
     "dotenv": "^17.4.2",
     "postcss": "^8.5.10",
     "style-dictionary": "^5.4.0",
-    "tailwindcss": "^4.2.2",
+    "tailwindcss": "^3.4.19",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.8"

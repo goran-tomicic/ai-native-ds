@@ -73,6 +73,10 @@
       }
     },
     "red": {
+      "100": {
+        "$value": "#fee2e2",
+        "$type": "color"
+      },
       "500": {
         "$value": "#ef4444",
         "$type": "color"
@@ -87,6 +91,10 @@
       }
     },
     "green": {
+      "100": {
+        "$value": "#dcfce7",
+        "$type": "color"
+      },
       "500": {
         "$value": "#22c55e",
         "$type": "color"
@@ -97,6 +105,10 @@
       }
     },
     "amber": {
+      "100": {
+        "$value": "#fef3c7",
+        "$type": "color"
+      },
       "500": {
         "$value": "#f59e0b",
         "$type": "color"

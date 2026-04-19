@@ -105,6 +105,12 @@
               "value": "#1D4ED8"
             },
             {
+              "name": "color/red/100",
+              "type": "color",
+              "isAlias": false,
+              "value": "#FEE2E2"
+            },
+            {
               "name": "color/blue/900",
               "type": "color",
               "isAlias": false,
@@ -129,6 +135,12 @@
               "value": "#B91C1C"
             },
             {
+              "name": "color/green/100",
+              "type": "color",
+              "isAlias": false,
+              "value": "#DCFCE7"
+            },
+            {
               "name": "color/green/500",
               "type": "color",
               "isAlias": false,
@@ -139,6 +151,12 @@
               "type": "color",
               "isAlias": false,
               "value": "#16A34A"
+            },
+            {
+              "name": "color/amber/100",
+              "type": "color",
+              "isAlias": false,
+              "value": "#FEF3C7"
             },
             {
               "name": "color/amber/500",
