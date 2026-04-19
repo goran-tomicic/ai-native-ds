@@ -17,27 +17,28 @@ Most design systems are documented for humans. But increasingly, the consumer is
 
 ## The 10-week arc
 
-| Week | Focus                                                        | Status         |
-| ---- | ------------------------------------------------------------ | -------------- |
-| 1    | Foundations + first component (Badge) E2E                    | 🟡 In progress |
-| 2    | Second component (Button) — prove pattern generalizes        | ⚪             |
-| 3    | Components 3–5 (Input, Card, Dialog) + spec draft automation | ⚪             |
-| 4    | LLM docs generation, `llms.txt`, static API endpoint         | ⚪             |
-| 5    | MCP server + Claude Desktop demo + record video              | ⚪             |
-| 6–7  | 5 more components, harden pipeline, case study draft         | ⚪             |
-| 8    | Polish, case study final, portfolio page                     | ⚪             |
-| 9    | Buffer / publish / share                                     | ⚪             |
-| 10   | Buffer                                                       | ⚪             |
+| Week | Focus                                                        | Status  |
+| ---- | ------------------------------------------------------------ | ------- |
+| 1    | Foundations + first component (Badge) E2E                    | ✅ Done |
+| 2    | Second component (Button) — prove pattern generalizes        | ⚪      |
+| 3    | Components 3–5 (Input, Card, Dialog) + spec draft automation | ⚪      |
+| 4    | LLM docs generation, `llms.txt`, static API endpoint         | ⚪      |
+| 5    | MCP server + Claude Desktop demo + record video              | ⚪      |
+| 6–7  | 5 more components, harden pipeline, case study draft         | ⚪      |
+| 8    | Polish, case study final, portfolio page                     | ⚪      |
+| 9    | Buffer / publish / share                                     | ⚪      |
+| 10   | Buffer                                                       | ⚪      |
 
 ---
 
 ## Locked-in decisions
 
-- **Stack:** React + TypeScript + Tailwind + cva + Radix primitives, pnpm, Vite
+- **Stack:** React + TypeScript + Tailwind v3.4 + cva + Radix primitives, pnpm, Vite
 - **First component:** Badge (low interaction complexity, proves E2E pipeline fast)
 - **Source of truth:** component `.spec.json` files, validated against JSON Schema
 - **Token format:** DTCG (Design Tokens Community Group)
 - **Token extraction:** **plugin-based** (`variables2json` Figma plugin) → custom normalizer script. Originally planned REST API, pivoted due to Figma's Enterprise-only gating of `file_variables:read` scope.
+- **Token transform:** Style Dictionary v4, DTCG input → CSS variables + TS constants + Tailwind theme object
 - **Repo:** public on GitHub from day one, commit history is part of the artifact
 
 ---
@@ -77,54 +78,74 @@ Most design systems are documented for humans. But increasingly, the consumer is
 - Saved plugin output to `tokens/_raw/figma-export.json`
 - Wrote `scripts/normalize-tokens.ts` — transforms plugin format → DTCG nested JSON with `$value` + `$type`, handles dimension conversion for space/radius (raw numbers → `"4px"`)
 - Generated clean `tokens/core.tokens.json` — 36 tokens, properly nested, DTCG-compliant
-- Parked original REST API script as `scripts/figma-to-tokens.enterprise.example.ts` (reference implementation for future Enterprise migration)
+- Parked original REST API script as `scripts/figma-to-tokens.enterprise.example.ts`
 - Wrote `scripts/README.md` documenting the pipeline
-- `pnpm tokens:normalize` runs clean
 
 **Friction / notes:**
 
-- **Major pivot:** Figma's Variables REST API (`file_variables:read` scope) is gated to **Enterprise plans only**. Professional plan cannot access it. Error surfaced as `403: This endpoint requires the file_variables:read scope`, and the scope doesn't appear in the PAT creation UI for non-Enterprise accounts.
-- Plugin-based workflow is the working pivot: two manual steps (run plugin in Figma → save JSON → normalize) instead of one command, but achieves the same end state.
+- **Major pivot:** Figma's Variables REST API (`file_variables:read` scope) is gated to **Enterprise plans only**. Professional plan cannot access it. Plugin-based workflow is the working pivot.
 
 **Artifacts:**
 
-- `tokens/core.tokens.json` — 36 tokens in DTCG format (colors + dimensions)
-- `scripts/normalize-tokens.ts` — active pipeline
-- `scripts/figma-to-tokens.enterprise.example.ts` — parked reference
-- `scripts/README.md` — workflow documentation
-
-**Case study note:** The Figma Enterprise wall is a valuable story to tell — shows understanding of real-world constraints and pragmatic adaptation. Not a setback, a realistic portfolio narrative.
+- `tokens/core.tokens.json` — DTCG-format tokens
+- `scripts/normalize-tokens.ts`, `scripts/figma-to-tokens.enterprise.example.ts`
 
 ---
 
-### Day 3 🟡 Planned
+### Day 3 ✅ Done
 
-**Goal:** Tokens become consumable by code. First component (Badge) renders on screen using the token pipeline.
+**Goal:** Tokens become consumable by code. First component (Badge) renders on screen using the full token pipeline.
+
+**Completed:**
+
+- Installed and configured **Style Dictionary v4** (`style-dictionary.config.ts`)
+- SD generates three outputs from DTCG tokens:
+  - `generated/tokens.css` — CSS custom properties for runtime use
+  - `generated/tokens.ts` + `generated/tokens.d.ts` — typed constants
+  - `generated/tailwind.tokens.cjs` — flat module consumed by Tailwind theme
+- Set up **Vite + React playground** at `playground/` — local dev app for rendering components
+- Added Tailwind v3.4 with `tailwind.config.cjs` that pulls colors/radii from generated tokens (no hardcoded values)
+- Wrote **Badge component spec** (`components/badge/badge.spec.json`) — 5 tones, 2 sizes, full a11y/composition/rules metadata — validates against schema
+- Implemented **Badge component** (`components/badge/badge.tsx`) using `cva` for variants, `forwardRef` for ref forwarding
+- Rendered Badge in five tones (neutral, info, success, warning, danger) and two sizes in the playground
+- Updated `package.json` scripts: `tokens:normalize`, `tokens:generate`, `tokens:build` (chains both)
+
+**Friction / notes:**
+
+- **Tailwind v4 → v3 downgrade:** initial install pulled Tailwind v4.2 which has a completely different CSS-based config model. v4 ecosystem isn't mature enough yet; downgraded to v3.4 for stability. Noted as a potential future migration chapter.
+- **Content glob resolution:** Tailwind's `content` globs had to be switched from relative paths to `path.resolve(__dirname, ...)` absolute paths. When Vite runs PostCSS from the `playground/` directory, relative globs resolved against the wrong CWD and Tailwind found no utility classes to compile.
+- **Silent missing-token failure:** initial `success/warning/danger` tones rendered with text color but no background. Root cause: Badge spec referenced `color.green.100`, `color.amber.100`, `color.red.100`, but those shades weren't in Figma yet (only `500/600/700` existed). Tailwind silently drops classes whose colors aren't defined. Added the missing `100` shades to Figma, re-exported, rebuilt — all colors now render.
+
+**Key insight from Day 3:** the missing-100-shades issue surfaces exactly the kind of integrity problem an AI-native DS should catch. A spec referencing nonexistent tokens should **fail the build loudly**, not silently render broken UI. **Added to backlog:** token-reference validation step as a Day 5/6 task — walk every spec's `tokens` block, verify each reference resolves to an actual DTCG token, fail the build on mismatch.
+
+**Artifacts:**
+
+- `generated/tokens.css`, `generated/tokens.ts`, `generated/tailwind.tokens.cjs` — pipeline outputs
+- `components/badge/badge.spec.json` — first component spec
+- `components/badge/badge.tsx` — first implementation
+- `playground/` — Vite + React dev app
+- `tailwind.config.cjs`, `postcss.config.cjs` + `playground/postcss.config.cjs`
+- First screenshot of Badge rendering in 5 tones — **save locally, case study asset #1**
+
+**Case study note:** Day 3 shipped the first visible artifact of the project and surfaced the "silent token mismatch" problem that validates the AI-native premise — i.e. machine-readable structure catches bugs that prose docs can't. That's a headline moment for the eventual write-up.
+
+---
+
+### Day 4 🟡 Planned
+
+**Goal:** Introduce the semantic token layer. Migrate Badge from raw `bg-slate-100` classes to intent-based references (`bg-badge-neutral-bg`, etc.) so the component contract doesn't leak implementation details. Also: add basic TypeScript types generated from component spec.
 
 **Planned steps:**
 
-1. Install Style Dictionary — transforms DTCG JSON into multiple outputs (CSS variables, Tailwind config, TS constants)
-2. Configure SD to generate:
-   - `generated/tokens.css` — CSS custom properties (`--color-slate-500`, `--radius-md`, etc.)
-   - `generated/tokens.ts` — typed constants for TS consumers
-   - `generated/tailwind.tokens.cjs` — theme extension for Tailwind config
-3. Wire Tailwind config to import generated token module
-4. Set up minimal Vite + React playground app at `playground/` — renders components for local dev
-5. Write first Badge component spec (`components/badge/badge.spec.json`) validated against schema
-6. Hand-code first Badge component (`badge.tsx`) using generated tokens via Tailwind classes
-7. Render Badge variants in playground to verify visual output
-
-**End state:** Change a color in Figma → re-run plugin + normalize + style-dictionary → Badge visually updates in playground. That's the first true end-to-end moment of the pipeline.
-
-**Completed:** _[fill in]_
-
-**Friction / notes:** _[fill in]_
-
-**Artifacts:** _[fill in]_
+1. Add a second DTCG file, `tokens/semantic.tokens.json`, defining intent tokens that reference core tokens via DTCG aliases (`{color.slate.100}`)
+2. Extend Style Dictionary config to resolve aliases and include semantic tokens in output
+3. Update Badge component to use semantic classes instead of raw color scales
+4. Prove aliasing works: change `color.slate.100` in Figma, both `neutral.bg` badge color and any other consumer update together
+5. Stretch: write a small script that reads `badge.spec.json` and emits a typed Props interface
 
 ---
 
-### Day 4+ — _TBD_
+### Day 5+ — _TBD_
 
 Plans written day-by-day based on prior day's outcome.
 
@@ -136,7 +157,8 @@ Plans written day-by-day based on prior day's outcome.
 - **Component #2 after Badge:** Button or Input?
 - **Case study format:** long-form post, personal site page, or video walkthrough?
 - **MCP server hosting:** local-only demo, or deploy to Cloudflare Workers / Vercel for a live URL?
-- **Semantic token layer:** when to introduce it? Probably Week 2 once Badge is done and we're about to build Button (which needs `color.action.primary.*` tokens).
+- **Token reference validation (Day 5/6 task):** script that walks every spec's `tokens` block and validates each reference resolves to a real DTCG token. Fail-loud on mismatch.
+- **Tailwind v4 migration chapter:** explore v4's CSS-first config model as a potential case study chapter — might be a cleaner AI-native story (tokens live in CSS, not buried in JS config).
 
 ---
 
@@ -151,4 +173,4 @@ Plans written day-by-day based on prior day's outcome.
 
 ---
 
-_Last updated: end of Day 2_
+_Last updated: end of Day 3_
