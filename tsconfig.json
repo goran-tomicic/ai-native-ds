@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
+    "types": ["node"],
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "strict": true,
@@ -9,7 +10,7 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "allowImportingTsExtensions": false,
-    "noEmit": true
+    "noEmit": true,
   },
   "include": ["components", "scripts", "schemas"]
 }
