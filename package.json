@@ -6,6 +6,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "tokens:normalize": "tsx scripts/normalize-tokens.ts",
+    "tokens:build": "pnpm tokens:normalize",
     "validate:specs": "ajv validate -s schemas/component.schema.json -d 'components/**/*.spec.json'"
   },
   "keywords": [],
@@ -20,6 +22,7 @@
     "ajv": "^8.18.0",
     "ajv-cli": "^5.0.0",
     "autoprefixer": "^10.5.0",
+    "dotenv": "^17.4.2",
     "postcss": "^8.5.10",
     "tailwindcss": "^4.2.2",
     "tsx": "^4.21.0",

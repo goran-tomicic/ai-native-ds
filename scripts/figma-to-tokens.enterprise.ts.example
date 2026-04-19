@@ -1,0 +1,136 @@
+/**
+ * FIGMA ENTERPRISE ONLY — reference script, not in active use.
+ *
+ * This uses Figma's Variables REST API (GET /v1/files/:key/variables/local),
+ * which requires the `file_variables:read` scope — gated to Enterprise plans.
+ *
+ * The active pipeline uses the "variables2json" Figma plugin to export
+ * Variables as JSON, then scripts/normalize-tokens.ts transforms that
+ * export into DTCG-format tokens.
+ *
+ * Kept here to document intent and make migration easy when Enterprise
+ * access becomes available.
+ */
+
+import 'dotenv/config'
+import { writeFile, mkdir } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
+
+const FIGMA_TOKEN = process.env.FIGMA_TOKEN
+const FIGMA_FILE_KEY = process.env.FIGMA_FILE_KEY
+
+if (!FIGMA_TOKEN || !FIGMA_FILE_KEY) {
+  console.error('Missing FIGMA_TOKEN or FIGMA_FILE_KEY in .env')
+  process.exit(1)
+}
+
+type FigmaVariable = {
+  id: string
+  name: string
+  resolvedType: 'COLOR' | 'FLOAT' | 'STRING' | 'BOOLEAN'
+  valuesByMode: Record<string, any>
+  variableCollectionId: string
+}
+
+type FigmaCollection = {
+  id: string
+  name: string
+  modes: { modeId: string; name: string }[]
+  defaultModeId: string
+}
+
+type FigmaVariablesResponse = {
+  meta: {
+    variables: Record<string, FigmaVariable>
+    variableCollections: Record<string, FigmaCollection>
+  }
+}
+
+async function fetchVariables(): Promise<FigmaVariablesResponse> {
+  const res = await fetch(
+    `https://api.figma.com/v1/files/${FIGMA_FILE_KEY}/variables/local`,
+    { headers: { 'X-Figma-Token': FIGMA_TOKEN! } }
+  )
+  if (!res.ok) throw new Error(`Figma API ${res.status}: ${await res.text()}`)
+  return res.json()
+}
+
+function rgbaToHex({ r, g, b, a }: { r: number; g: number; b: number; a: number }) {
+  const toHex = (n: number) => Math.round(n * 255).toString(16).padStart(2, '0')
+  const hex = `#${toHex(r)}${toHex(g)}${toHex(b)}`
+  return a < 1 ? `${hex}${toHex(a)}` : hex
+}
+
+function figmaTypeToDTCG(type: FigmaVariable['resolvedType']): string {
+  switch (type) {
+    case 'COLOR':   return 'color'
+    case 'FLOAT':   return 'number'
+    case 'STRING':  return 'string'
+    case 'BOOLEAN': return 'boolean'
+  }
+}
+
+function formatValue(value: any, type: FigmaVariable['resolvedType']): any {
+  if (type === 'COLOR') return rgbaToHex(value)
+  return value
+}
+
+function setNested(obj: any, path: string[], value: any) {
+  let curr = obj
+  for (let i = 0; i < path.length - 1; i++) {
+    const key = path[i]
+    if (!curr[key]) curr[key] = {}
+    curr = curr[key]
+  }
+  curr[path[path.length - 1]] = value
+}
+
+async function main() {
+  console.log('Fetching variables from Figma…')
+  const data = await fetchVariables()
+  const { variables, variableCollections } = data.meta
+
+  // Group by collection name
+  const byCollection: Record<string, any> = {}
+
+  for (const variable of Object.values(variables)) {
+    const collection = variableCollections[variable.variableCollectionId]
+    const collectionName = collection.name.toLowerCase()
+
+    if (!byCollection[collectionName]) byCollection[collectionName] = {}
+
+    // Figma names use "/" as group separator → nested structure
+    const path = variable.name.split('/')
+    const modeValue = variable.valuesByMode[collection.defaultModeId]
+
+    // Skip variable aliases for now (they reference other variables)
+    // We'll handle them when we add the semantic layer
+    if (modeValue?.type === 'VARIABLE_ALIAS') continue
+
+    const dtcgToken = {
+      $value: formatValue(modeValue, variable.resolvedType),
+      $type: figmaTypeToDTCG(variable.resolvedType),
+    }
+
+    setNested(byCollection[collectionName], path, dtcgToken)
+  }
+
+  // Write each collection to its own file
+  for (const [name, tokens] of Object.entries(byCollection)) {
+    const outPath = resolve(`tokens/${name}.tokens.json`)
+    await mkdir(dirname(outPath), { recursive: true })
+    await writeFile(outPath, JSON.stringify(tokens, null, 2) + '\n')
+    const count = countTokens(tokens)
+    console.log(`✔  tokens/${name}.tokens.json (${count} tokens)`)
+  }
+}
+
+function countTokens(obj: any): number {
+  if (obj?.$value !== undefined) return 1
+  return Object.values(obj).reduce<number>((sum, v) => sum + countTokens(v), 0)
+}
+
+main().catch(err => {
+  console.error(err)
+  process.exit(1)
+})
