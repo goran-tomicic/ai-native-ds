@@ -46,7 +46,13 @@
     },
     "tokens": {
       "type": "object",
-      "additionalProperties": { "type": "string" }
+      "description": "Maps the component's internal slot names to design tokens. Can include style declaration (subtle/solid/outline/ghost), palette mappings, slot templates, and direct token references.",
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "string" },
+          { "type": "object" }
+        ]
+      }
     },
     "accessibility": {
       "type": "object",

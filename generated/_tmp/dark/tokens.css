@@ -1,0 +1,60 @@
+/**
+ * Do not edit directly, this file was auto-generated.
+ */
+
+[data-theme="dark"] {
+  --color-common-surface-base: #0f172a;
+  --color-common-surface-raised: #1e293b;
+  --color-common-surface-overlay: #334155;
+  --color-common-surface-sunken: #020617;
+  --color-common-fg-strong: #f8fafc;
+  --color-common-fg-base: #e2e8f0;
+  --color-common-fg-muted: #94a3b8;
+  --color-common-fg-subtle: #475569;
+  --color-common-fg-inverse: #020617;
+  --color-common-bg-subtle: #0f172a;
+  --color-common-bg-muted: #1e293b;
+  --color-common-bg-base: #334155;
+  --color-common-bg-strong: #475569;
+  --color-common-border-subtle: #1e293b;
+  --color-common-border-muted: #334155;
+  --color-common-border-base: #475569;
+  --color-common-border-strong: #64748b;
+  --color-common-border-active: #3b82f6;
+  --color-common-border-focus: #3b82f6;
+  --color-palette-neutral-subtle: #0f172a;
+  --color-palette-neutral-soft: #1e293b;
+  --color-palette-neutral-muted: #334155;
+  --color-palette-neutral-base: #94a3b8;
+  --color-palette-neutral-strong: #cbd5e1;
+  --color-palette-neutral-bold: #f1f5f9;
+  --color-palette-neutral-contrast: #020617;
+  --color-palette-primary-subtle: #172554;
+  --color-palette-primary-soft: #1e3a8a;
+  --color-palette-primary-muted: #1e40af;
+  --color-palette-primary-base: #3b82f6;
+  --color-palette-primary-strong: #60a5fa;
+  --color-palette-primary-bold: #bfdbfe;
+  --color-palette-primary-contrast: #ffffff;
+  --color-palette-success-subtle: #052e16;
+  --color-palette-success-soft: #14532d;
+  --color-palette-success-muted: #166534;
+  --color-palette-success-base: #22c55e;
+  --color-palette-success-strong: #4ade80;
+  --color-palette-success-bold: #bbf7d0;
+  --color-palette-success-contrast: #ffffff;
+  --color-palette-warning-subtle: #451a03;
+  --color-palette-warning-soft: #78350f;
+  --color-palette-warning-muted: #92400e;
+  --color-palette-warning-base: #fbbf24;
+  --color-palette-warning-strong: #fcd34d;
+  --color-palette-warning-bold: #fde68a;
+  --color-palette-warning-contrast: #020617;
+  --color-palette-danger-subtle: #450a0a;
+  --color-palette-danger-soft: #7f1d1d;
+  --color-palette-danger-muted: #991b1b;
+  --color-palette-danger-base: #ef4444;
+  --color-palette-danger-strong: #f87171;
+  --color-palette-danger-bold: #fecaca;
+  --color-palette-danger-contrast: #ffffff;
+}

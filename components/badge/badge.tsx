@@ -2,16 +2,15 @@ import { forwardRef } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 const badge = cva(
-  // Base styles — apply to all badges
   'inline-flex items-center justify-center font-medium rounded-full whitespace-nowrap',
   {
     variants: {
       tone: {
-        neutral: 'bg-slate-100 text-slate-700',
-        info:    'bg-blue-100 text-blue-700',
-        success: 'bg-green-100 text-green-700',
-        warning: 'bg-amber-100 text-amber-700',
-        danger:  'bg-red-100 text-red-700',
+        neutral: 'bg-neutral-soft text-neutral-bold',
+        info:    'bg-primary-soft text-primary-bold',
+        success: 'bg-success-soft text-success-bold',
+        warning: 'bg-warning-soft text-warning-bold',
+        danger:  'bg-danger-soft text-danger-bold',
       },
       size: {
         sm: 'text-xs px-2 py-0.5',

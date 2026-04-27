@@ -12,5 +12,5 @@
     "allowImportingTsExtensions": false,
     "noEmit": true,
   },
-  "include": ["components", "scripts", "schemas"]
+  "include": ["components", "scripts", "schemas", "*.ts"]
 }

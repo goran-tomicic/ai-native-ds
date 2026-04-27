@@ -2,20 +2,28 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 
 /**
- * Normalizes Figma plugin export (variables2json format) to DTCG format.
+ * Normalizes Figma plugin export (variables2json format) to DTCG.
  *
- * Input shape (variables2json):
- *   { collections: [{ name, modes: [{ variables: [{ name, type, value }] }] }] }
- *
- * Output shape (DTCG):
- *   { color: { slate: { 50: { $value, $type } } } }
+ * Handles:
+ *  - Single-mode collections (core) → flat DTCG
+ *  - Multi-mode collections (semantic) → DTCG with $extensions.modes
+ *  - Aliases → DTCG reference strings: "{path.to.token}"
+ *  - Cross-collection aliases (semantic → core) preserved
+ *  - Same-collection aliases (semantic → semantic) preserved
+ *  - Number tokens with space/radius prefix → "Npx" dimension type
  */
+
+type RawVariableValue =
+  | string
+  | number
+  | boolean
+  | { collection: string; name: string }
 
 type RawVariable = {
   name: string
   type: 'color' | 'number' | 'string' | 'boolean'
   isAlias: boolean
-  value: string | number | boolean
+  value: RawVariableValue
 }
 
 type RawMode = { name: string; variables: RawVariable[] }
@@ -29,6 +37,51 @@ const TYPE_MAP: Record<RawVariable['type'], string> = {
   boolean: 'boolean',
 }
 
+function normalizeKey(name: string): string[] {
+  // "color/slate/500" → ["color", "slate", "500"]
+  return name.split('/')
+}
+
+function aliasToDTCGRef(alias: { collection: string; name: string }): string {
+  // The plugin gives us { collection: "core", name: "color/slate/500" }.
+  // DTCG references the token by its dot-path inside its own JSON file.
+  // Since we emit one file per collection and SD merges them, we just need
+  // the path to the token: "{color.slate.500}".
+  // Cross-collection refs work because SD loads all source files into one tree.
+  const path = alias.name.replace(/\//g, '.')
+  return `{${path}}`
+}
+
+function formatValue(
+  variable: RawVariable
+): { $value: any; $type: string } {
+  const dtcgType = TYPE_MAP[variable.type]
+
+  // Aliases → reference string
+  if (variable.isAlias && typeof variable.value === 'object' && variable.value !== null) {
+    return {
+      $value: aliasToDTCGRef(variable.value as { collection: string; name: string }),
+      $type:  dtcgType,
+    }
+  }
+
+  // Number tokens that represent CSS dimensions
+  if (variable.type === 'number' && typeof variable.value === 'number') {
+    if (variable.name.startsWith('space/') || variable.name.startsWith('radius/')) {
+      return { $value: `${variable.value}px`, $type: 'dimension' }
+    }
+    return { $value: variable.value, $type: 'number' }
+  }
+
+  // Color hex literals
+  if (variable.type === 'color' && typeof variable.value === 'string') {
+    return { $value: variable.value.toLowerCase(), $type: 'color' }
+  }
+
+  // Fallback
+  return { $value: variable.value, $type: dtcgType }
+}
+
 function setNested(obj: any, path: string[], value: any) {
   let curr = obj
   for (let i = 0; i < path.length - 1; i++) {
@@ -39,66 +92,51 @@ function setNested(obj: any, path: string[], value: any) {
   curr[path[path.length - 1]] = value
 }
 
-function normalizeValue(value: any, type: RawVariable['type']) {
-  if (type === 'color' && typeof value === 'string') {
-    return value.toLowerCase() // normalize #F8FAFC → #f8fafc
-  }
-  return value
-}
-
-function normalizeSpace(value: any, varName: string) {
-  // Space and radius numeric tokens → stringified px for DTCG "dimension"
-  // Figma exports them as raw numbers; DTCG `dimension` type expects "4px" etc.
-  if (varName.startsWith('space/') || varName.startsWith('radius/')) {
-    return { $value: `${value}px`, $type: 'dimension' }
-  }
-  return null
-}
-
 async function main() {
   const rawPath = resolve('tokens/_raw/figma-export.json')
-  const outPath = resolve('tokens/core.tokens.json')
-
   console.log(`Reading ${rawPath}…`)
   const raw: RawExport = JSON.parse(await readFile(rawPath, 'utf-8'))
 
-  const byCollection: Record<string, any> = {}
-  let tokenCount = 0
-
   for (const collection of raw.collections) {
     const collectionName = collection.name.toLowerCase()
-    if (!byCollection[collectionName]) byCollection[collectionName] = {}
+    const isMultiMode = collection.modes.length > 1
 
-    // Use the first mode (Mode 1) — multi-mode support comes later
-    const mode = collection.modes[0]
-    if (!mode) continue
+    if (!isMultiMode) {
+      // Single-mode → flat DTCG file (e.g., core.tokens.json)
+      const tree: any = {}
+      const mode = collection.modes[0]
+      let count = 0
 
-    for (const variable of mode.variables) {
-      if (variable.isAlias) continue // handle aliases in semantic layer later
-
-      const path = variable.name.split('/')
-
-      // Check for space/radius dimension handling first
-      const dimensionToken = normalizeSpace(variable.value, variable.name)
-
-      const dtcgToken = dimensionToken ?? {
-        $value: normalizeValue(variable.value, variable.type),
-        $type:  TYPE_MAP[variable.type],
+      for (const variable of mode.variables) {
+        setNested(tree, normalizeKey(variable.name), formatValue(variable))
+        count++
       }
 
-      setNested(byCollection[collectionName], path, dtcgToken)
-      tokenCount++
+      const target = resolve(`tokens/${collectionName}.tokens.json`)
+      await mkdir(dirname(target), { recursive: true })
+      await writeFile(target, JSON.stringify(tree, null, 2) + '\n')
+      console.log(`✔  tokens/${collectionName}.tokens.json (${count} tokens)`)
+    } else {
+      // Multi-mode → emit one file per mode (e.g., semantic.light.tokens.json, semantic.dark.tokens.json)
+      // Style Dictionary will load each into its own platform/scope.
+      for (const mode of collection.modes) {
+        const tree: any = {}
+        let count = 0
+
+        for (const variable of mode.variables) {
+          setNested(tree, normalizeKey(variable.name), formatValue(variable))
+          count++
+        }
+
+        const modeName = mode.name.toLowerCase()
+        const target = resolve(`tokens/${collectionName}.${modeName}.tokens.json`)
+        await writeFile(target, JSON.stringify(tree, null, 2) + '\n')
+        console.log(`✔  tokens/${collectionName}.${modeName}.tokens.json (${count} tokens)`)
+      }
     }
   }
 
-  for (const [name, tokens] of Object.entries(byCollection)) {
-    const target = resolve(`tokens/${name}.tokens.json`)
-    await mkdir(dirname(target), { recursive: true })
-    await writeFile(target, JSON.stringify(tokens, null, 2) + '\n')
-    console.log(`✔  tokens/${name}.tokens.json`)
-  }
-
-  console.log(`\nNormalized ${tokenCount} tokens from ${raw.collections.length} collection(s).`)
+  console.log('\nDone.')
 }
 
 main().catch(err => {
