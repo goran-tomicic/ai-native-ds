@@ -17,30 +17,30 @@ Most design systems are documented for humans. But increasingly, the consumer is
 
 ## The 10-week arc
 
-| Week | Focus                                                          | Status  |
-| ---- | -------------------------------------------------------------- | ------- |
-| 1    | Foundations + first component (Badge) E2E + token architecture | ✅ Done |
-| 2    | Second component (Button) — prove pattern generalizes          | 🟡 Next |
-| 3    | Components 3–5 (Input, Card, Dialog) + spec draft automation   | ⚪      |
-| 4    | LLM docs generation, `llms.txt`, static API endpoint           | ⚪      |
-| 5    | MCP server + Claude Desktop demo + record video                | ⚪      |
-| 6–7  | 5 more components, harden pipeline, case study draft           | ⚪      |
-| 8    | Polish, case study final, portfolio page                       | ⚪      |
-| 9    | Buffer / publish / share                                       | ⚪      |
-| 10   | Buffer                                                         | ⚪      |
+| Week | Focus                                                          | Status         |
+| ---- | -------------------------------------------------------------- | -------------- |
+| 1    | Foundations + first component (Badge) E2E + token architecture | ✅ Done        |
+| 2    | Second component (Button) — prove pattern generalizes          | 🟡 In progress |
+| 3    | Components 3–5 (Input, Card, Dialog) + spec draft automation   | ⚪             |
+| 4    | LLM docs generation, `llms.txt`, static API endpoint           | ⚪             |
+| 5    | MCP server + Claude Desktop demo + record video                | ⚪             |
+| 6–7  | 5 more components, harden pipeline, case study draft           | ⚪             |
+| 8    | Polish, case study final, portfolio page                       | ⚪             |
+| 9    | Buffer / publish / share                                       | ⚪             |
+| 10   | Buffer                                                         | ⚪             |
 
 ---
 
 ## Locked-in decisions
 
 - **Stack:** React + TypeScript + Tailwind v3.4 + cva + Radix primitives, pnpm, Vite
-- **First component:** Badge (low interaction complexity, proves E2E pipeline fast)
 - **Source of truth:** component `.spec.json` files, validated against JSON Schema
 - **Token format:** DTCG (Design Tokens Community Group)
 - **Token extraction:** plugin-based (`variables2json` Figma plugin) → custom normalizer
-- **Token transform:** Style Dictionary v4, mode-aware output (light :root, dark [data-theme="dark"])
-- **Token architecture:** three layers — core (primitives, single mode) + semantic/common (UI infrastructure, two modes) + semantic/palette (variant-driving, two modes). Documented in `docs/token-architecture.md`.
-- **Repo:** public on GitHub from day one, commit history is part of the artifact
+- **Token transform:** Style Dictionary v4, mode-aware output
+- **Token architecture:** three layers — core (primitives, single mode) + semantic/common (UI infrastructure, two modes) + semantic/palette (variant-driving, two modes). See `docs/token-architecture.md`.
+- **Disabled state:** opacity + pointer-events, not per-palette tokens
+- **Repo:** public on GitHub, commit history is part of the artifact
 
 ---
 
@@ -48,140 +48,120 @@ Most design systems are documented for humans. But increasingly, the consumer is
 
 ### Day 1 ✅ Done
 
-**Goal:** Foundations exist.
-
-**Completed:**
-
-- GitHub repo created (public, MIT)
-- pnpm + TypeScript + dependencies installed
-- Directory structure scaffolded
-- `schemas/component.schema.json` committed — the contract every component spec validates against
-- README written
-- Figma file created with three Variable collections
-
----
+Foundations. Repo, scaffolded directories, schema, README, Figma file with empty Variable collections.
 
 ### Day 2 ✅ Done
 
-**Goal:** Tokens flow from Figma to repo in DTCG format.
-
-**Completed:**
-
-- 36 core Variables in Figma (color scales, radii, spacing)
-- `variables2json` plugin export → `tokens/_raw/figma-export.json`
-- `scripts/normalize-tokens.ts` transforms plugin format → DTCG nested JSON
-- Generated `tokens/core.tokens.json`
-
-**Friction:** Figma's Variables REST API gated to Enterprise plans. Pivoted to plugin-based workflow.
-
----
+Tokens flow Figma → repo as DTCG. 36 core variables. `variables2json` plugin + custom normalizer (pivoted from REST API after hitting Figma's Enterprise paywall). Generated `tokens/core.tokens.json`.
 
 ### Day 3 ✅ Done
 
-**Goal:** Tokens become consumable by code. First component renders.
-
-**Completed:**
-
-- Style Dictionary v4 generates CSS vars + TS constants + Tailwind theme from DTCG
-- Vite + React playground at `playground/`
-- Tailwind v3.4 config sourced from generated tokens (no hardcoded values)
-- Badge spec written and validated against schema
-- Badge component implemented with cva
-- Five tones rendered in playground
-
-**Friction:** Tailwind v4 → v3 downgrade (v4's CSS-first config not yet mature ecosystem-wide). Content glob path resolution (relative → absolute). Silent missing-token failure surfaced the need for token-reference validation (deferred to Week 2).
-
----
+Token pipeline → code. Style Dictionary generates CSS vars + TS constants + Tailwind theme. Vite + React playground. Badge component E2E with 5 tones rendered. First visual artifact.
 
 ### Day 4 ✅ Done
 
-**Goal:** Add semantic token layer (common + palette). Light + dark modes. Migrate Badge to palette tokens.
+Three-layer token architecture committed: core + semantic/common + semantic/palette. Light + dark modes from day one. Committed `docs/token-architecture.md` as binding reference. Style Dictionary emits both modes into single CSS file. Tailwind exposes common + palette as utility classes (`canvas` rename for common bg). Badge migrated to palette tokens (subtle style consumer). Dark mode toggle in playground. Both modes render correctly.
 
-**Architecture work (most of the day):**
+### Day 5 ✅ Done
 
-Settled on a three-layer token model with the common/palette split:
+**Goal:** Button spec written and validated. State-modifier tokens added to palettes Button uses.
 
-- `core` — primitives, single mode, 11-step Tailwind color scales (slate, blue, red, green, amber)
-- `semantic/common` — UI infrastructure with category-specific shapes (fg: 5 slots, bg: 4 slots, border: 6 slots including active/focus that alias to palette, surface: 4 mode-asymmetric elevation slots)
-- `semantic/palette` — five palettes (neutral, primary, success, warning, danger) × seven intensity slots (subtle, soft, muted, base, strong, bold, contrast)
+**Completed:**
 
-Light + dark modes from day one. `core` stays single-mode; `semantic` carries both modes with mode-asymmetric values where appropriate (e.g., `surface/raised` is white in light, slate/800 in dark).
+- Added 12 state-modifier tokens to Figma palette: `base-hover`, `base-active`, `soft-hover`, `soft-active` for `neutral`, `primary`, `danger` palettes — 24 mode-aware values total
+- Re-exported with `variables2json` and ran `pnpm tokens:build` — pipeline still clean
+- Wrote Button spec (`components/button/button.spec.json`) v0.1.0:
+  - 3 styles (solid, subtle, ghost)
+  - 3 palettes (neutral, primary, danger)
+  - 3 sizes (sm, md, lg)
+  - 5 interactive states (default, hover, active, focus, disabled, loading)
+  - Full a11y, composition, rules, examples, anti-patterns sections
+  - Spec is ~250 lines — first artifact rich enough to demonstrate the AI-native premise
+- Updated `docs/token-architecture.md` with disabled-as-opacity decision and rationale
+- All specs validate (Badge + Button)
+- Committed and pushed
 
-Committed the architecture as `docs/token-architecture.md` — first-class case study artifact.
+**Architectural decision logged:**
 
-**Pipeline work:**
+Disabled state is implemented via opacity (0.4) plus `pointer-events: none`, not via dedicated tokens. Reasoning: disabled is a _modifier_, not a _variant_ — same palette, dimmed. This avoids per-palette disabled token sprawl, works for any future palette without new tokens, and matches industry convention (Linear, Vercel, Radix all do this). Components declare `disabled_opacity` in their spec's `effects` block.
 
-- Updated normalizer to handle multi-mode collections and DTCG aliases
-- Style Dictionary config emits two builds (light + dark) merged into single `tokens.css` with `:root` (core + light semantic) and `[data-theme="dark"]` (semantic dark overrides only)
-- Tailwind config exposes common + palette as utility classes; common `bg/*` renamed to `canvas-*` in class layer to avoid `bg-bg-*` ergonomic collision
-- Component schema updated to allow richer `tokens` block (palette consumers declare style + palette mapping + slots)
+**Token system size at end of Day 5:**
 
-**Component migration:**
-
-- Badge spec v0.2.0: declares `"style": "subtle"`, `"palette_mapping": {...}`, `"slots": { "bg": "{palette}.soft", "fg": "{palette}.bold" }`. Component is a structural palette consumer, no longer references primitives directly.
-- Badge implementation: cva variants now use `bg-{palette}-soft text-{palette}-bold` Tailwind classes.
-- Playground: dark mode toggle in header (button toggling `data-theme` on `<html>`).
-- Both modes render correctly.
-
-**Token counts:**
-
-- Core: 68 primitives (55 colors + 11 spacing/radius + 2 absolutes)
-- Semantic common: 19 tokens × 2 modes = 38 mode-aware values
-- Semantic palette: 35 tokens × 2 modes = 70 mode-aware values
-- Total semantic: 54 × 2 = 108 mode-aware values
-- Generated CSS: 165 `--color-*` declarations across `:root` and `[data-theme="dark"]`
-
-**Friction / notes:**
-
-- Multiple architectural revisions through the morning before settling. The key insight that unlocked progress: common and palette serve different roles (common = neutral UI infrastructure used by everything; palette = variant-driving treatments consumed by components via prop). The defining test for placing a new token: "does a component variant prop pick between this and a sibling?"
-- Schema needed updating to allow nested objects in component `tokens` block. The Day 3 schema assumed flat key→value; Day 4 components have richer structure (style declaration + palette mapping + slot templates).
-- App body styling needed to use common CSS variables (not core variables) for dark mode swap to take effect.
+- Core: 68 primitives
+- Semantic common: 19 × 2 modes = 38 mode-aware values
+- Semantic palette: 47 (35 base slots + 12 state modifiers) × 2 modes = 94 mode-aware values
+- Total semantic: 132 mode-aware values
+- Generated CSS: ~190 `--color-*` declarations across `:root` and `[data-theme="dark"]`
 
 **Artifacts:**
 
-- `docs/token-architecture.md` — the binding architecture reference. Probably the strongest case-study asset produced so far.
-- `tokens/core.tokens.json`, `tokens/semantic.light.tokens.json`, `tokens/semantic.dark.tokens.json` — DTCG sources of truth
-- `generated/tokens.css` — mode-aware CSS variables, both modes in one file
-- `generated/tailwind.tokens.cjs` + `generated/tokens.ts` + `generated/tokens.d.ts` — derived outputs
-- Updated `tailwind.config.cjs` with `canvas`/`fg`/`surface`/`palette` utility families
-- Updated `style-dictionary.config.ts` with two-build merge strategy
-- Badge spec v0.2.0 + migrated implementation
-- Playground with dark mode toggle
-- Light + dark mode screenshots
+- `components/button/button.spec.json` v0.1.0
+- 12 new palette state-modifier tokens in Figma + pipeline
+- Updated `docs/token-architecture.md` with disabled rationale
+
+**Case study note:** This is the day Button's spec became the AI-native premise made real. ~250 lines of structured contract — every prop with guidance, every style mapped to palette slots, anti-patterns documented with the _why_. An LLM with this spec can build Button correctly without seeing the implementation. Tomorrow's implementation is just translating an already-decided contract into code.
 
 ---
 
-### Day 5 🟡 Planned
+### Day 6 🟡 Planned
 
-**Tentative goal:** Start Button component. Define the `palette` + `style` API on a component that has multiple styles (solid, outline, subtle, ghost) — proving the architecture's consumption model on something more complex than Badge.
+**Goal:** Implement Button component. Render full variant matrix in playground. Both modes.
 
-Plan written at Day 5 kickoff.
+**Three pieces:**
+
+1. **`components/button/button.tsx`** — cva config: 3 styles × 3 palettes × 3 sizes
+   - Hover/active via Tailwind state variants (using new `*-hover`, `*-active` palette tokens)
+   - Focus via `:focus-visible` + `common/border/focus` ring
+   - Disabled via `disabled:opacity-40 disabled:pointer-events-none`
+   - Loading state: spinner swap, preserves width via min-width
+   - `forwardRef`, full HTML button props passthrough
+   - Estimated ~80–120 lines
+
+2. **`components/spinner/spinner.tsx`** — minimal side dependency for Button's loading state
+   - Spec + impl
+   - CSS-only animated spinner
+   - One size prop (matches Button sizes), inherits color via `currentColor`
+   - Estimated ~30 lines
+
+3. **Playground updates** — variant matrix:
+   - For each style × palette: render default + a "trigger hover" demo (or paragraph showing hover behavior)
+   - All three sizes shown
+   - Loading state demo (button that toggles loading on click)
+   - Disabled examples
+   - Both modes still toggleable
+
+**Time estimate:** 2.5–3 hrs.
+
+**End state:** A real working Button rendering in playground in 27+ visual variants, with state interactions, in both light and dark mode.
 
 ---
 
 ## Open questions / parking lot
 
-- **Tokens Studio later?** Plugin workflow works but loses "Figma change → auto PR" magic. Consider Tokens Studio + Git sync later for the case study demo video.
 - **Token reference validation (Week 2 task):** script to walk every spec's `tokens` block, verify each reference resolves to a real DTCG token, fail build on mismatch.
-- **Tightening the schema:** current allowed shape for `tokens` is permissive (`oneOf: [string, object]`). Could define a stricter palette-consumer pattern with required `style` + `palette_mapping` + `slots`.
+- **Tightening the schema:** define a stricter palette-consumer pattern (required `style_slots` + `palette_mapping`).
+- **Per-palette focus rings:** currently uses common `border/focus` (always blue). Consider upgrading to per-palette focus rings later (destructive buttons get red focus rings).
+- **Outline style for Button:** deferred. Add when a use case appears.
+- **Tokens Studio later?** Plugin workflow works but loses "Figma change → auto PR" magic.
 - **Case study format:** long-form post, personal site page, or video walkthrough?
 - **MCP server hosting:** local-only demo, or deploy to Cloudflare Workers / Vercel for a live URL?
-- **Info palette:** deferred. Add when a component needs to differ from primary.
 
 ---
 
 ## Glossary
 
-- **DTCG** — Design Tokens Community Group format; emerging W3C standard for design tokens as JSON
-- **Spec** — `component.spec.json` file; machine-readable contract defining a component's props, states, tokens, a11y, rules, examples
-- **MCP** — Model Context Protocol; Anthropic's standard for exposing tools and data to LLMs
-- **Code Connect** — Figma feature that links Figma components to their real code implementations
-- **cva** — class-variance-authority; library for expressing Tailwind variants as typed config
-- **Style Dictionary** — Amazon-authored build tool that transforms token JSON into platform-specific output
-- **Palette** — a named color treatment (neutral, primary, success, warning, danger) consumed by components via variant prop
-- **Common** — UI infrastructure tokens used regardless of variant (page bg, body fg, dividers, surfaces)
-- **Mode** — light or dark theme; encoded in semantic tokens, swapped at runtime via CSS variable scope
+- **DTCG** — Design Tokens Community Group format
+- **Spec** — `component.spec.json` file; machine-readable contract
+- **MCP** — Model Context Protocol; Anthropic's standard for exposing tools/data to LLMs
+- **Code Connect** — Figma feature linking Figma components to code implementations
+- **cva** — class-variance-authority; library for typed Tailwind variant config
+- **Style Dictionary** — Amazon's token JSON build tool
+- **Palette** — named color treatment consumed by components via variant prop
+- **Common** — UI infrastructure tokens used regardless of variant
+- **Mode** — light or dark theme; encoded in semantic tokens
+- **Style (component-level)** — visual treatment a component supports (solid, subtle, outline, ghost)
+- **State modifier** — token suffix encoding interaction state (`-hover`, `-active`)
 
 ---
 
-_Last updated: end of Day 4._
+_Last updated: end of Day 5._
