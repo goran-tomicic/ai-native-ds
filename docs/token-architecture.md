@@ -191,6 +191,15 @@ This is a convention, not enforced by code. Components can deviate with document
 
 **Example:** Badge is always effectively `subtle` style — `tone` prop picks the palette, no style axis. Badge's spec declares `"style": "subtle"` and `"slots": { "bg": "{palette}.soft", "fg": "{palette}.bold" }`.
 
+### Disabled state — opacity, not tokens
+
+Disabled appearance is implemented via opacity (0.4) plus pointer-events: none, not via dedicated tokens. Reasoning:
+
+- Disabled is a modifier, not a variant — same palette, dimmed
+- Avoids per-palette disabled token sprawl
+- Works for any future palette without new tokens
+- Components declare disabled_opacity in their spec's effects block
+
 ---
 
 ## Layer 1 — `core` primitives

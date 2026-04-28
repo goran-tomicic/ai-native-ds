@@ -1,0 +1,210 @@
+{
+  "$schema": "../../schemas/component.schema.json",
+  "name": "Button",
+  "version": "0.1.0",
+  "status": "experimental",
+  "category": "action",
+  "description": "Triggers an action. Use for: submitting forms, confirming dialogs, opening menus, primary actions in views. Not for navigation between pages — use Link. Not for binary toggles — use ToggleButton.",
+
+  "props": {
+    "palette": {
+      "type": "enum",
+      "values": ["neutral", "primary", "danger"],
+      "default": "neutral",
+      "description": "Semantic intent of the action, drives color treatment.",
+      "guidance": {
+        "neutral": "Default for most buttons. Use for: cancel, back, secondary actions, tertiary actions. The bulk of buttons in any UI should be neutral.",
+        "primary": "The single most important action in a view. Use for: submit, save, continue, confirm. Only one primary button per view, ever.",
+        "danger":  "Irreversible or destructive actions. Use for: delete, remove, cancel-subscription, reset. Pair with confirmation when consequence is severe."
+      }
+    },
+    "style": {
+      "type": "enum",
+      "values": ["solid", "subtle", "ghost"],
+      "default": "solid",
+      "description": "Visual treatment. Determines which palette slots are consumed.",
+      "guidance": {
+        "solid":  "Filled background using palette base color. Highest visual weight. Reserve for primary and destructive actions where emphasis matters.",
+        "subtle": "Soft tinted background. Medium visual weight. Default for neutral palette buttons. Use when the action is important but shouldn't dominate.",
+        "ghost":  "Transparent background, palette-tinted text. Lowest visual weight. Use for tertiary actions, toolbar buttons, dense UIs."
+      }
+    },
+    "size": {
+      "type": "enum",
+      "values": ["sm", "md", "lg"],
+      "default": "md",
+      "description": "Physical size. sm in dense contexts (toolbars, table rows). md is default. lg for hero CTAs or mobile primary actions."
+    },
+    "loading": {
+      "type": "boolean",
+      "default": false,
+      "description": "Replaces button content with a spinner. Disables interaction while loading. Preserves button width to prevent layout shift."
+    },
+    "disabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Prevents interaction. Reduces opacity to indicate non-interactive state. Disabled appearance is palette-agnostic — neutral, primary, and danger all dim the same way."
+    },
+    "iconStart": {
+      "type": "ReactNode",
+      "optional": true,
+      "description": "Icon rendered before the label. Pair with text, not as standalone (use IconButton for icon-only)."
+    },
+    "iconEnd": {
+      "type": "ReactNode",
+      "optional": true,
+      "description": "Icon rendered after the label. Common for: chevrons indicating dropdown, arrows for next/forward."
+    },
+    "type": {
+      "type": "enum",
+      "values": ["button", "submit", "reset"],
+      "default": "button",
+      "description": "Native button type attribute. Use 'submit' inside forms. Default 'button' prevents accidental form submission."
+    },
+    "children": {
+      "type": "ReactNode",
+      "description": "Button label. Use a verb describing the action: 'Save changes', 'Delete account'. Avoid 'OK', 'Submit' without context."
+    }
+  },
+
+  "states": ["default", "hover", "active", "focus", "disabled", "loading"],
+
+  "tokens": {
+    "palette_mapping": {
+      "neutral": "color.palette.neutral",
+      "primary": "color.palette.primary",
+      "danger":  "color.palette.danger"
+    },
+    "style_slots": {
+      "solid": {
+        "bg":         "{palette}.base",
+        "bg_hover":   "{palette}.base-hover",
+        "bg_active":  "{palette}.base-active",
+        "fg":         "{palette}.contrast"
+      },
+      "subtle": {
+        "bg":         "{palette}.soft",
+        "bg_hover":   "{palette}.soft-hover",
+        "bg_active":  "{palette}.soft-active",
+        "fg":         "{palette}.bold"
+      },
+      "ghost": {
+        "bg":         "transparent",
+        "bg_hover":   "{palette}.subtle",
+        "bg_active":  "{palette}.soft",
+        "fg":         "{palette}.bold"
+      }
+    },
+    "effects": {
+      "disabled_opacity":        "0.4",
+      "disabled_pointer_events": "none",
+      "transition":              "background-color 120ms ease, opacity 120ms ease"
+    },
+    "shared": {
+      "focus_ring":  "color.common.border.focus",
+      "radius":      "radius.md",
+      "padding.sm":  "space.1 space.3",
+      "padding.md":  "space.2 space.4",
+      "padding.lg":  "space.3 space.6",
+      "font.sm":     "13px",
+      "font.md":     "14px",
+      "font.lg":     "16px"
+    }
+  },
+
+  "accessibility": {
+    "role": "button",
+    "keyboard": ["Enter", "Space"],
+    "requirements": [
+      "Must have accessible label via children or aria-label",
+      "Loading state must announce via aria-busy='true'",
+      "Disabled state uses aria-disabled (not the disabled attribute) when context requires the button stay focusable for screen reader navigation",
+      "Focus ring must be visible — never set outline:none without replacement",
+      "Icon-only buttons require aria-label (or use IconButton component)"
+    ],
+    "contrast": "4.5:1 minimum for text. Solid style buttons meet this via palette/contrast pairing. When disabled, the 0.4 opacity reduces effective contrast — this is intentional and signals non-interactivity."
+  },
+
+  "composition": {
+    "allowedChildren": ["text", "Icon", "Spinner"],
+    "forbiddenChildren": ["Button", "Link", "Input", "Select"],
+    "commonParents": ["ButtonGroup", "Form", "Dialog.Footer", "Card.Actions", "Toolbar"]
+  },
+
+  "rules": {
+    "do": [
+      "Use verbs that describe the action: 'Save changes', 'Delete account', 'Send invite'",
+      "One primary button per view — the single most important action",
+      "Pair destructive buttons with confirmation when consequences are severe",
+      "Place primary action on the right in LTR dialog footers",
+      "Use type='submit' inside forms; type='button' everywhere else"
+    ],
+    "dont": [
+      "Don't use 'Click here', 'OK', or 'Submit' without context",
+      "Don't use multiple primary buttons in the same view",
+      "Don't use a button for navigation — use Link",
+      "Don't override the disabled opacity — the dim is the affordance",
+      "Don't put icons on both sides unless one is decorative (chevron) and one is meaningful"
+    ]
+  },
+
+  "examples": [
+    {
+      "name": "Primary submit",
+      "code": "<Button palette=\"primary\" style=\"solid\" type=\"submit\">Save changes</Button>",
+      "context": "Form footer"
+    },
+    {
+      "name": "Destructive with confirmation",
+      "code": "<Button palette=\"danger\" style=\"solid\" onClick={confirmDelete}>Delete account</Button>",
+      "context": "Settings page, paired with confirmation dialog"
+    },
+    {
+      "name": "Cancel in dialog",
+      "code": "<Button palette=\"neutral\" style=\"subtle\">Cancel</Button>",
+      "context": "Dialog footer alongside primary action"
+    },
+    {
+      "name": "Toolbar action",
+      "code": "<Button palette=\"neutral\" style=\"ghost\" size=\"sm\" iconStart={<EditIcon />}>Edit</Button>",
+      "context": "Dense toolbar, multiple actions"
+    },
+    {
+      "name": "Loading state",
+      "code": "<Button palette=\"primary\" style=\"solid\" loading>Saving</Button>",
+      "context": "After form submit, before response"
+    },
+    {
+      "name": "Icon-end for dropdown",
+      "code": "<Button palette=\"neutral\" style=\"subtle\" iconEnd={<ChevronDownIcon />}>Options</Button>",
+      "context": "Trigger for menu or popover"
+    }
+  ],
+
+  "antiPatterns": [
+    {
+      "bad":  "<Button palette=\"primary\" style=\"solid\">Cancel</Button>",
+      "good": "<Button palette=\"neutral\" style=\"subtle\">Cancel</Button>",
+      "why":  "Cancel is a low-emphasis action. Solid primary reserved for the canonical action of the view."
+    },
+    {
+      "bad":  "<Button palette=\"danger\" style=\"solid\" onClick={() => navigate('/profile')}>View Profile</Button>",
+      "good": "<Link href=\"/profile\">View Profile</Link>",
+      "why":  "Navigation belongs to Link. Buttons trigger actions. Destructive palette implies destructive action."
+    },
+    {
+      "bad":  "<Button disabled style={{ opacity: 1 }}>Save</Button>",
+      "good": "<Button disabled>Save</Button>",
+      "why":  "Disabled appearance is the visual cue users expect. Overriding opacity keeps the button looking active when it isn't, which is misleading."
+    }
+  ],
+
+  "related": {
+    "use_instead_when": [
+      { "component": "Link",         "when": "navigating to another page or view" },
+      { "component": "IconButton",   "when": "icon-only button, no text label" },
+      { "component": "ToggleButton", "when": "binary on/off state" },
+      { "component": "MenuButton",   "when": "trigger for a menu — has its own composition" }
+    ]
+  }
+}

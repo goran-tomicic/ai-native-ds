@@ -616,6 +616,24 @@
               }
             },
             {
+              "name": "color/palette/neutral/soft-hover",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/slate/200"
+              }
+            },
+            {
+              "name": "color/palette/neutral/soft-active",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/slate/300"
+              }
+            },
+            {
               "name": "color/palette/neutral/muted",
               "type": "color",
               "isAlias": true,
@@ -631,6 +649,24 @@
               "value": {
                 "collection": "core",
                 "name": "color/slate/500"
+              }
+            },
+            {
+              "name": "color/palette/neutral/base-hover",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/slate/600"
+              }
+            },
+            {
+              "name": "color/palette/neutral/base-active",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/slate/700"
               }
             },
             {
@@ -679,6 +715,24 @@
               }
             },
             {
+              "name": "color/palette/primary/soft-hover",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/blue/200"
+              }
+            },
+            {
+              "name": "color/palette/primary/soft-active",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/blue/300"
+              }
+            },
+            {
               "name": "color/palette/primary/muted",
               "type": "color",
               "isAlias": true,
@@ -694,6 +748,24 @@
               "value": {
                 "collection": "core",
                 "name": "color/blue/600"
+              }
+            },
+            {
+              "name": "color/palette/primary/base-hover",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/blue/700"
+              }
+            },
+            {
+              "name": "color/palette/primary/base-active",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/blue/800"
               }
             },
             {
@@ -868,6 +940,24 @@
               }
             },
             {
+              "name": "color/palette/danger/soft-hover",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/red/200"
+              }
+            },
+            {
+              "name": "color/palette/danger/soft-active",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/red/300"
+              }
+            },
+            {
               "name": "color/palette/danger/muted",
               "type": "color",
               "isAlias": true,
@@ -883,6 +973,24 @@
               "value": {
                 "collection": "core",
                 "name": "color/red/600"
+              }
+            },
+            {
+              "name": "color/palette/danger/base-hover",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/red/700"
+              }
+            },
+            {
+              "name": "color/palette/danger/base-active",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/red/800"
               }
             },
             {
@@ -1107,6 +1215,24 @@
               }
             },
             {
+              "name": "color/palette/neutral/soft-hover",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/slate/700"
+              }
+            },
+            {
+              "name": "color/palette/neutral/soft-active",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/slate/600"
+              }
+            },
+            {
               "name": "color/palette/neutral/muted",
               "type": "color",
               "isAlias": true,
@@ -1122,6 +1248,24 @@
               "value": {
                 "collection": "core",
                 "name": "color/slate/400"
+              }
+            },
+            {
+              "name": "color/palette/neutral/base-hover",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/slate/300"
+              }
+            },
+            {
+              "name": "color/palette/neutral/base-active",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/slate/200"
               }
             },
             {
@@ -1170,6 +1314,24 @@
               }
             },
             {
+              "name": "color/palette/primary/soft-hover",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/blue/800"
+              }
+            },
+            {
+              "name": "color/palette/primary/soft-active",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/blue/700"
+              }
+            },
+            {
               "name": "color/palette/primary/muted",
               "type": "color",
               "isAlias": true,
@@ -1185,6 +1347,24 @@
               "value": {
                 "collection": "core",
                 "name": "color/blue/500"
+              }
+            },
+            {
+              "name": "color/palette/primary/base-hover",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/blue/400"
+              }
+            },
+            {
+              "name": "color/palette/primary/base-active",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/blue/300"
               }
             },
             {
@@ -1359,6 +1539,24 @@
               }
             },
             {
+              "name": "color/palette/danger/soft-hover",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/red/800"
+              }
+            },
+            {
+              "name": "color/palette/danger/soft-active",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/red/700"
+              }
+            },
+            {
               "name": "color/palette/danger/muted",
               "type": "color",
               "isAlias": true,
@@ -1374,6 +1572,24 @@
               "value": {
                 "collection": "core",
                 "name": "color/red/500"
+              }
+            },
+            {
+              "name": "color/palette/danger/base-hover",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/red/400"
+              }
+            },
+            {
+              "name": "color/palette/danger/base-active",
+              "type": "color",
+              "isAlias": true,
+              "value": {
+                "collection": "core",
+                "name": "color/red/300"
               }
             },
             {

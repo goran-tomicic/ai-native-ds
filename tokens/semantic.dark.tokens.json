@@ -96,12 +96,28 @@
           "$value": "{color.slate.800}",
           "$type": "color"
         },
+        "soft-hover": {
+          "$value": "{color.slate.700}",
+          "$type": "color"
+        },
+        "soft-active": {
+          "$value": "{color.slate.600}",
+          "$type": "color"
+        },
         "muted": {
           "$value": "{color.slate.700}",
           "$type": "color"
         },
         "base": {
           "$value": "{color.slate.400}",
+          "$type": "color"
+        },
+        "base-hover": {
+          "$value": "{color.slate.300}",
+          "$type": "color"
+        },
+        "base-active": {
+          "$value": "{color.slate.200}",
           "$type": "color"
         },
         "strong": {
@@ -126,12 +142,28 @@
           "$value": "{color.blue.900}",
           "$type": "color"
         },
+        "soft-hover": {
+          "$value": "{color.blue.800}",
+          "$type": "color"
+        },
+        "soft-active": {
+          "$value": "{color.blue.700}",
+          "$type": "color"
+        },
         "muted": {
           "$value": "{color.blue.800}",
           "$type": "color"
         },
         "base": {
           "$value": "{color.blue.500}",
+          "$type": "color"
+        },
+        "base-hover": {
+          "$value": "{color.blue.400}",
+          "$type": "color"
+        },
+        "base-active": {
+          "$value": "{color.blue.300}",
           "$type": "color"
         },
         "strong": {
@@ -216,12 +248,28 @@
           "$value": "{color.red.900}",
           "$type": "color"
         },
+        "soft-hover": {
+          "$value": "{color.red.800}",
+          "$type": "color"
+        },
+        "soft-active": {
+          "$value": "{color.red.700}",
+          "$type": "color"
+        },
         "muted": {
           "$value": "{color.red.800}",
           "$type": "color"
         },
         "base": {
           "$value": "{color.red.500}",
+          "$type": "color"
+        },
+        "base-hover": {
+          "$value": "{color.red.400}",
+          "$type": "color"
+        },
+        "base-active": {
+          "$value": "{color.red.300}",
           "$type": "color"
         },
         "strong": {
