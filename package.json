@@ -9,7 +9,10 @@
     "tokens:normalize": "tsx scripts/normalize-tokens.ts",
     "tokens:generate": "tsx style-dictionary.config.ts",
     "tokens:build": "pnpm tokens:normalize && pnpm tokens:generate",
-    "validate:specs": "ajv validate -s schemas/component.schema.json -d 'components/**/*.spec.json'"
+    "validate:specs": "ajv validate -s schemas/component.schema.json -d 'components/**/*.spec.json'",
+    "docs:llm": "tsx scripts/generate-llm-docs.ts",
+    "api:build": "tsx scripts/build-api.ts",
+    "build:all": "pnpm tokens:build && pnpm docs:llm && pnpm api:build"
   },
   "keywords": [],
   "author": "",
