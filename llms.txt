@@ -1,0 +1,46 @@
+# ai-native-ds
+
+Design system built for AI agents as first-class consumers. Components, tokens, and patterns optimized for programmatic consumption by LLMs and code-generation agents.
+
+## Core idea
+
+Most design systems are documented for humans browsing a docs site. This one treats the consumer as a program — an LLM generating UI from a Figma file, a code agent picking the right token, a model composing components from a prompt. Specs are structured contracts, not prose. Tokens are DTCG JSON. Documentation is generated from machine-readable sources.
+
+## How to use this
+
+- For component contracts: read /api/components.json (all specs in one file) or fetch individual /components/{name}/spec.json
+- For tokens: read /api/tokens.json or /tokens/*.tokens.json
+- For per-component AI-optimized docs: /components/{name}/{name}.llm.md
+- For architecture reasoning: /docs/token-architecture.md
+
+## Components shipped
+
+- Badge — passive label, palette consumer (subtle style only)
+- Button — action trigger, 3 styles × 3 palettes × 3 sizes, full state coverage
+- Spinner — loading indicator, color-inheriting
+
+## Token model (summary)
+
+Three layers:
+- core/ — primitives, single mode, 11-step Tailwind color scales
+- semantic/common/ — UI infrastructure, light + dark modes (fg, bg, border, surface)
+- semantic/palette/ — variant-driving treatments, light + dark modes (neutral, primary, success, warning, danger × 7 intensity slots)
+
+Components reference semantic tokens. Primitives are escape hatches.
+
+## Conventions for AI-generated UI using this system
+
+1. Use semantic tokens, not primitives. `bg-primary-base` not `bg-blue-600`.
+2. Pick palette by intent: primary for canonical actions, danger for destructive, neutral for secondary.
+3. One primary action per view.
+4. Disabled state = opacity 40 + pointer-events none, NOT a different palette color.
+5. Focus rings use `--color-common-border-focus` (currently primary-blue, may evolve).
+6. Light/dark handled via `[data-theme="dark"]` attribute on `<html>`. Components don't need to know which mode is active.
+
+## Repo
+
+https://github.com/goran-tomicic/ai-native-ds
+
+## Status
+
+Week 2 of a 10-week experiment. Active development.
