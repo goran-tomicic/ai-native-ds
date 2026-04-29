@@ -1,0 +1,92 @@
+{
+  "$schema": "../../schemas/component.schema.json",
+  "name": "Spinner",
+  "version": "0.1.0",
+  "status": "experimental",
+  "category": "feedback",
+  "description": "Indicates ongoing background activity. Inherits color from parent via currentColor — meant to be embedded in components like Button (loading state) or used standalone for fetch indicators. For full-page or section loading, use Skeleton instead.",
+
+  "props": {
+    "size": {
+      "type": "enum",
+      "values": ["sm", "md", "lg"],
+      "default": "md",
+      "description": "Diameter. Match to context: sm inside dense buttons, md for inline indicators, lg for standalone loading states."
+    },
+    "label": {
+      "type": "string",
+      "default": "Loading",
+      "description": "Accessible label announced to screen readers via aria-label. Override when context demands specificity ('Saving changes', 'Sending')."
+    }
+  },
+
+  "states": ["default"],
+
+  "tokens": {
+    "shared": {
+      "size.sm": "12px",
+      "size.md": "16px",
+      "size.lg": "24px",
+      "stroke_width": "2px",
+      "animation_duration": "750ms"
+    },
+    "color_inheritance": "currentColor"
+  },
+
+  "accessibility": {
+    "role": "status",
+    "keyboard": [],
+    "requirements": [
+      "Must have aria-label describing what is loading",
+      "When inside a parent component (e.g., Button), parent should set aria-busy='true' instead of relying on Spinner's role"
+    ],
+    "contrast": "Inherits parent color, which determines contrast"
+  },
+
+  "composition": {
+    "allowedChildren": [],
+    "forbiddenChildren": ["text", "Icon", "Button"],
+    "commonParents": ["Button", "IconButton", "Skeleton", "Card"]
+  },
+
+  "rules": {
+    "do": [
+      "Use inside components that have their own busy semantics (Button) — let parent communicate state",
+      "Match size to context (sm in buttons, md inline, lg standalone)",
+      "Provide a meaningful aria-label when used standalone"
+    ],
+    "dont": [
+      "Don't use for content that takes <300ms — flickers and hurts perceived performance",
+      "Don't use for full-page loading — Skeleton communicates layout better",
+      "Don't override color directly — set color on parent, Spinner inherits"
+    ]
+  },
+
+  "examples": [
+    {
+      "name": "Inside Button",
+      "code": "<Button loading>Saving</Button>",
+      "context": "Button manages spinner via loading prop"
+    },
+    {
+      "name": "Standalone inline",
+      "code": "<Spinner label=\"Loading users\" />",
+      "context": "Inline indicator next to a section title"
+    }
+  ],
+
+  "antiPatterns": [
+    {
+      "bad":  "<Spinner color=\"#3b82f6\" />",
+      "good": "<div style={{ color: 'var(--color-palette-primary-base)' }}><Spinner /></div>",
+      "why":  "Spinner inherits via currentColor. Set color on the parent for consistency with the design system."
+    }
+  ],
+
+  "related": {
+    "use_instead_when": [
+      { "component": "Skeleton", "when": "loading content with known layout (lists, cards)" },
+      { "component": "Progress", "when": "you can communicate determinate progress" }
+    ]
+  }
+}
