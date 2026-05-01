@@ -17,19 +17,17 @@ Most design systems are documented for humans. But increasingly, the consumer is
 
 ## The 10-week arc
 
-| Week | Focus                                                             | Status  |
-| ---- | ----------------------------------------------------------------- | ------- |
-| 1    | Foundations + first component (Badge) E2E + token architecture    | ✅ Done |
-| 2    | Second component (Button) + AI consumption layer                  | ✅ Done |
-| 3    | Demo with Claude + MCP server scaffolding                         | 🟡 Next |
-| 4    | More components (Input, Card, Dialog) using the AI-validated spec | ⚪      |
-| 5    | MCP server live + record demo video                               | ⚪      |
-| 6–7  | Additional components, harden pipeline, case study draft          | ⚪      |
-| 8    | Polish, case study final, portfolio page                          | ⚪      |
-| 9    | Buffer / publish / share                                          | ⚪      |
-| 10   | Buffer                                                            | ⚪      |
-
-Note: original plan had components 3–5 in week 3. Reordered — proving AI consumption end-to-end with two components is more valuable than building more components on an unvalidated thesis.
+| Week | Focus                                                    | Status         |
+| ---- | -------------------------------------------------------- | -------------- |
+| 1    | Foundations + Badge E2E + token architecture             | ✅ Done        |
+| 2    | Button + AI consumption layer                            | ✅ Done        |
+| 3    | AI demo + iterate v2 + more components                   | 🟡 In progress |
+| 4    | MCP server + Claude Desktop demo + record video          | ⚪             |
+| 5    | Additional components, harden pipeline, case study draft | ⚪             |
+| 6–7  | Polish, case study refinement                            | ⚪             |
+| 8    | Case study final + portfolio page                        | ⚪             |
+| 9    | Buffer / publish / share                                 | ⚪             |
+| 10   | Buffer                                                   | ⚪             |
 
 ---
 
@@ -40,125 +38,115 @@ Note: original plan had components 3–5 in week 3. Reordered — proving AI con
 - **Token format:** DTCG (Design Tokens Community Group)
 - **Token extraction:** `variables2json` Figma plugin → custom normalizer
 - **Token transform:** Style Dictionary v4, mode-aware output
-- **Token architecture:** core (primitives, single mode) + semantic/common + semantic/palette, both with light + dark
+- **Token architecture:** core + semantic/common + semantic/palette, light + dark
 - **Disabled state:** opacity + pointer-events, not per-palette tokens
-- **AI consumption surface:** llms.txt + per-component .llm.md + static API (public/api/components.json)
-- **Repo:** public on GitHub, commit history is part of the artifact
+- **AI consumption surfaces:** llms.txt + per-component .llm.md + static API
+- **Repo:** public on GitHub
 
 ---
 
 ## Daily log
 
-### Day 1 ✅ Done
+### Day 1 ✅ Foundations
 
-Foundations. Repo, scaffolded directories, schema, README, Figma file with empty Variable collections.
+Repo, scaffolded directories, schema, README, Figma file with empty Variable collections.
 
-### Day 2 ✅ Done
+### Day 2 ✅ Tokens flow Figma → repo as DTCG
 
-Tokens flow Figma → repo as DTCG. `variables2json` plugin + custom normalizer (pivoted from REST API after Figma's Enterprise paywall).
+`variables2json` plugin + custom normalizer (pivoted from REST API after Figma's Enterprise paywall).
 
-### Day 3 ✅ Done
+### Day 3 ✅ Token pipeline → code
 
-Token pipeline → code. Style Dictionary, Vite + React playground, Tailwind sourced from generated tokens. Badge component E2E with 5 tones rendered.
+Style Dictionary, Vite + React playground, Tailwind sourced from generated tokens. Badge component E2E with 5 tones.
 
-### Day 4 ✅ Done
+### Day 4 ✅ Three-layer architecture + dual modes
 
-Three-layer token architecture committed. Light + dark modes from day one. `docs/token-architecture.md` written. Style Dictionary emits both modes into single CSS file. Tailwind exposes common + palette as utility classes. Badge migrated to palette tokens. Dark mode toggle in playground.
+Architecture committed to `docs/token-architecture.md`. Style Dictionary emits both modes into single CSS file. Tailwind exposes common + palette as utilities. Badge migrated to palette tokens. Dark mode toggle.
 
-### Day 5 ✅ Done
+### Day 5 ✅ Button spec + state-modifier tokens
 
-Button spec written. State-modifier tokens added. Disabled-as-opacity decision committed.
+Button spec written (~250 lines). 12 new state-modifier tokens. Disabled-as-opacity decision committed.
 
-### Day 6 ✅ Done
+### Day 6 ✅ Button + Spinner implementation
 
-Button + Spinner implemented. Full variant matrix in playground. Both modes verified.
+Full variant matrix in playground (3 styles × 3 palettes × 3 sizes + states). Both modes verified.
 
-### Day 7 ✅ Done
+### Day 7 ✅ AI consumption layer
 
-**Goal:** Ship the AI consumption layer — make the design system programmatically consumable.
+`llms.txt`, per-component `.llm.md` generator, static API at `public/api/components.json`. README rewritten around the AI consumption story. `pnpm build:all` chains the full pipeline.
 
-**Completed:**
+### Day 8 ✅ AI consumption demo
 
-- **`llms.txt` at repo root** — terse AI entry point listing project identity, where structured content lives, and conventions for AI-generated UI.
-- **`scripts/generate-llm-docs.ts`** — generator script that reads each `*.spec.json` and emits a token-efficient `.llm.md`. Different from human docs: no marketing prose, structured prop tables, style→slot mappings, anti-patterns inline as `bad → good → why` triples.
-- **Per-component AI docs** — `badge.llm.md`, `button.llm.md`, `spinner.llm.md` generated from specs. Roughly 60% size reduction vs. spec source with no information loss for code-gen purposes.
-- **`scripts/build-api.ts`** — aggregator that combines all token files + all component specs + system conventions into one JSON.
-- **Static API endpoint** — `public/api/components.json`. Single ~25KB file an LLM can fetch in one request to get the entire design system surface (tokens, specs, conventions, schema reference).
-- **`pnpm build:all`** — chains the full pipeline: tokens:normalize → tokens:generate → docs:llm → api:build. One command produces every output.
-- **README rewrite** — repositioned around the AI consumption story. Three surfaces (llms.txt, .llm.md, components.json) listed up front. Pipeline diagram included. README is now portfolio-quality.
+**Goal:** Validate the AI consumption layer against a fresh Claude conversation. Document outputs, identify gaps.
 
-**Architectural decisions:**
+**Method:** Five sequential tests, fresh Claude.ai conversation, no project context. Two artifact formats tested: full `components.json` and per-component `.llm.md`. Each test produced verbatim output; outputs graded against per-test rubrics.
 
-- **`.llm.md` format** — designed to be different from human docs from day one. Format favors LLM-parseability: compact prop signatures (`name: type (default)`), structured style→slot mappings as labeled lists not tables, anti-patterns as inline triples, single-line code examples. The differentiation is intentional — human docs and AI docs have different optimal structures, and forcing both into one format compromises both.
-- **Static API over MCP for now** — chose `public/api/components.json` over an MCP server as the first AI surface because (1) zero infrastructure to deploy, (2) trivial to test by pasting JSON into an LLM context, (3) MCP can later wrap this same data structure. The static file becomes the foundation for the MCP server, not a competing approach.
-- **Generator over hand-written `.llm.md`** — temptation was to hand-craft each component's AI doc for maximum density. Resisted: handcrafted docs drift from spec; generated docs stay in sync forever. The generator is ~150 lines of TypeScript and produces docs an LLM finds equally useful. Worth the rigor.
+**Test outcomes:**
 
-**Build pipeline state:**
+| Test | Artifact       | Task                | Result                                                                                                   |
+| ---- | -------------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
+| 1    | full JSON      | submit button       | ✅ Clean pass — proper palette, style, type, label, citations                                            |
+| 2    | full JSON      | confirmation dialog | ⚠️ Composition right, but Button reimplemented as React component; `variant` instead of `style`; raw hex |
+| 3    | full JSON      | disabled + hover    | ⚠️ Token usage right, but skipped Button entirely — raw `<button>` + custom CSS classes                  |
+| 4    | `.llm.md` only | anti-pattern test   | ✅ Clean pass — refused, cited, suggested correction, used Button as JSX, prop names correct             |
+| 5    | full JSON      | invent Toast        | ⚠️ High-quality reasoning, but raw `<button>` for dismiss despite explicitly citing the right pattern    |
 
-```
-Figma → variables2json → figma-export.json
-                                  ↓
-                          normalize-tokens.ts
-                                  ↓
-                tokens/{core, semantic.light, semantic.dark}.tokens.json (DTCG)
-                                  ↓
-                       style-dictionary.config.ts
-                                  ↓
-              generated/{tokens.css, tokens.ts, tailwind.tokens.cjs}
-                                  ↓
-                            consumed by Tailwind + components
+**Headline finding — the artifact-format hypothesis:**
 
-Specs → generate-llm-docs.ts → components/{name}/{name}.llm.md (AI-readable per-component)
-Specs + tokens → build-api.ts → public/api/components.json (full surface, one fetch)
-```
+When fed full `components.json`, the model used `<Button>` correctly in 1 of 4 tests.
+When fed `.llm.md`, the model used `<Button>` correctly in 1 of 1 tests.
 
-`pnpm build:all` runs all of this end-to-end. ~30 seconds total.
+The mechanism: full JSON buries components beneath top-level `tokens`, encouraging the model to engage as a _reference document_ (extract values, cite rules, explain choices). `.llm.md` leads with JSX examples and prop tables, encouraging the model to engage as a _component library_ (import, use as JSX, parameterize via props). Both responses are technically correct given the artifact format.
 
-**Artifacts produced:**
+**Most damning data point:** Test 5's model wrote a code comment that said "ghost neutral, matching the toolbar ghost button pattern from the Button spec verbatim" — and then wrote a raw `<button>` instead of `<Button palette="neutral" style="ghost">`. The failure is consumption-format, not knowledge.
 
-- `llms.txt`
-- `scripts/generate-llm-docs.ts` + `scripts/build-api.ts`
-- `components/badge/badge.llm.md`
-- `components/button/button.llm.md`
-- `components/spinner/spinner.llm.md`
-- `public/api/components.json`
-- Updated `README.md` (portfolio-grade)
+**Strong signals on what works:**
 
-**Case study note:** Day 7 is the moment the project's title earns its name. Up through Day 6, "ai-native" was a _premise_ — an architecture choice with theoretical benefits. Day 7 ships the actual surfaces that make it real. The static API alone is the single most valuable artifact in the repo for the case study: ~25KB JSON that lets any LLM build correctly with this design system.
+- Token-level adherence: high across all tests
+- CSS variable usage: consistent (one Test 2 exception)
+- Convention citation: explicit and traceable
+- Anti-pattern refusal: works when prompted to flag conflicts
+- Reasoned justification: model picks tokens against alternatives ("border.muted because subtle would disappear, base would be too heavy")
+- Schema thinking: Test 5 proposed a Toast schema entry that fits the existing model
+
+**Day 8 case-study significance:**
+
+The arc went from _"we built an AI-native DS"_ to _"we built it, validated it against five LLM tasks, found a consumption-format issue we hadn't anticipated, and have a clear path to v2."_ The failure makes the case study credible. The fix path is concrete.
+
+**Artifacts:**
+
+- `docs/ai-demo-day-8.md` — five tests + synthesis, ~complete case study chapter
 
 ---
 
-### Day 8 🟡 Planned
+### Day 9 🟡 Planned — v2 iteration
 
-**Goal:** Validate the AI consumption story. Demo + capture.
+**Goal:** Implement four targeted fixes to the AI consumption layer. Re-run Tests 2, 3, 5 against v2. Document before/after.
 
-**Plan:**
+See `docs/day-9-plan.md` for the execution plan.
 
-1. **Open Claude (or Cursor) in a separate window**
-2. **Paste `public/api/components.json`** with a prompt like: _"Using only the components and conventions provided, build a confirmation dialog that asks the user to confirm account deletion. Output should be a self-contained React component."_
-3. **Capture the output** — screenshot the prompt, response, and rendered result
-4. **Run a few more tests** — different prompts, different complexity levels:
-   - "Build a settings panel with a save/cancel pair and a destructive delete account section"
-   - "Build a notification toast for a successful save"
-   - "Build a sign-up form with primary CTA and a small secondary cancel"
-5. **Document any gaps** — places where the LLM had to guess, hallucinate, or asked clarifying questions. Each gap is a place to tighten the spec.
-6. **Write up the demo** — short MD doc capturing the prompts, outputs, and findings. This becomes the case study's centerpiece.
+**The four fixes:**
 
-**Time estimate:** 1.5–2 hours, mostly observing and documenting.
+1. Restructure `llms.txt` to point at `.llm.md` files first; full JSON listed as token catalog
+2. Lead each `.llm.md` with a JSX usage example
+3. Add explicit consumption rule to `llms.txt`: "components are React components, use as JSX, do not reimplement"
+4. Add prop-name disambiguation note: "this system uses `style` (not `variant`)"
 
-**Stretch (if time):** Begin scaffolding the MCP server. Stub-level — server that exposes `get_component_spec(name)`, `list_components()`, `get_token(path)` tools, all backed by the static JSON. Don't deploy yet, just get it working locally.
+**Re-runs:** same prompts as Day 8 Tests 2, 3, 5. Compare outcomes side-by-side.
+
+**Time estimate:** 2–2.5 hours. Three fixes are small (1–4 are config/copy changes). The re-runs and comparison documentation are most of the time.
 
 ---
 
 ## Open questions / parking lot
 
-- **Token reference validation:** still pending. Now feasible — the static API contains all tokens, validator can walk every spec's `tokens` block against it.
-- **Per-palette focus rings:** deferred.
-- **Outline button style:** deferred.
-- **Tokens Studio:** still on the table for the demo video.
-- **Case study format:** long-form post, personal site page, or video walkthrough? Lean toward written + Day 8 demo embedded as a short video.
+- **Synthesis validation:** Day 8's synthesis was written end-of-day. Worth re-reading after a break before locking it in.
+- **Case study format:** long-form post, personal site page, or video walkthrough?
 - **MCP server hosting:** local-only demo or Cloudflare Workers / Vercel?
-- **API versioning:** components.json has `version: "0.1.0"` — should bump it explicitly when breaking changes happen.
+- **Per-palette focus rings:** still deferred.
+- **Token reference validation:** still pending.
+- **Tokens Studio:** for the demo video.
+- **Outline button style:** still deferred.
 
 ---
 
@@ -174,9 +162,9 @@ Specs + tokens → build-api.ts → public/api/components.json (full surface, on
 - **Mode** — light or dark theme; encoded in semantic tokens
 - **Style (component-level)** — visual treatment a component supports (solid, subtle, ghost)
 - **State modifier** — token suffix encoding interaction state (`-hover`, `-active`)
-- **`.llm.md`** — per-component AI-optimized documentation; generated from spec; deliberately different format from human docs
-- **Static API** — `public/api/components.json`; single-fetch endpoint exposing the full design system to AI consumers
+- **`.llm.md`** — per-component AI-optimized documentation; generated from spec
+- **Static API** — `public/api/components.json`; single-fetch endpoint exposing the full design system
 
 ---
 
-_Last updated: end of Day 7. Week 2 complete._
+_Last updated: end of Day 8._
