@@ -2,6 +2,12 @@
 
 A small visual label used to annotate or call out a status, count, or category. For interactive states or filtering, use Tag. For user-generated labels, use Chip.
 
+## Usage
+
+```jsx
+<Badge tone="success">Active</Badge>
+```
+
 ## Props
 
 tone: neutral | info | success | warning | danger (default: "neutral")

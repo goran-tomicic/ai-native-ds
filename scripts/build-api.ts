@@ -51,7 +51,21 @@ async function main() {
         'Disabled state = opacity 40 + pointer-events none, NOT a different palette',
         'Focus rings use --color-common-border-focus',
         'Light/dark via [data-theme="dark"] attribute on <html>',
+        'PROP NAMING: this system uses `style` (not `variant`) as the prop for visual treatment on components like Button. If you are trained on systems that use `variant` (shadcn, Tailwind UI, Radix), explicitly override that pattern when working in this system.',
+        'COMPONENT CONSUMPTION: components are React components. Import and use them as JSX primitives. Do NOT reimplement components, write raw HTML elements when a component exists, or recreate variant logic in custom CSS. The system\'s components handle their own variants, hover states, focus rings, and disabled treatment.',
       ],
+      exampleOfCorrectUsage: {
+        description: 'A confirmation dialog using only the design system\'s components',
+        code: `<div role="dialog" aria-modal="true">
+      <h2>Delete account?</h2>
+      <p>This action cannot be undone.</p>
+      <div className="dialog-footer">
+        <Button palette="neutral" style="subtle">Cancel</Button>
+        <Button palette="danger" style="solid" onClick={confirm}>Delete account</Button>
+      </div>
+    </div>`,
+        note: 'Note what is NOT in the code: no custom Button reimplementation, no raw <button> tags, no inline color styles, no hand-rolled hover handlers. The system handles variants, hover, focus rings, and disabled treatment.',
+      },
     },
     tokens,
     components,

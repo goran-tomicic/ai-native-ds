@@ -13,21 +13,25 @@ Most design systems are documented for humans. But increasingly, the consumer is
 
 **Model:** Figma (design) → Tokens + Specs (source of truth) → Code + Docs + AI endpoint (outputs)
 
+**Refined thesis after Day 9:** AI-native design systems are not fundamentally a documentation problem. They are a packaging problem. Documentation describes components; only packaging makes them callable. The MCP server is the load-bearing layer.
+
 ---
 
 ## The 10-week arc
 
-| Week | Focus                                                    | Status         |
-| ---- | -------------------------------------------------------- | -------------- |
-| 1    | Foundations + Badge E2E + token architecture             | ✅ Done        |
-| 2    | Button + AI consumption layer                            | ✅ Done        |
-| 3    | AI demo + iterate v2 + more components                   | 🟡 In progress |
-| 4    | MCP server + Claude Desktop demo + record video          | ⚪             |
-| 5    | Additional components, harden pipeline, case study draft | ⚪             |
-| 6–7  | Polish, case study refinement                            | ⚪             |
-| 8    | Case study final + portfolio page                        | ⚪             |
-| 9    | Buffer / publish / share                                 | ⚪             |
-| 10   | Buffer                                                   | ⚪             |
+| Week | Focus                                        | Status         |
+| ---- | -------------------------------------------- | -------------- |
+| 1    | Foundations + Badge E2E + token architecture | ✅ Done        |
+| 2    | Button + AI consumption layer (v1)           | ✅ Done        |
+| 3    | AI demo + v2 iteration → MCP server          | 🟡 In progress |
+| 4    | MCP server complete + Claude Desktop demo    | ⚪             |
+| 5    | Record video + additional components if time | ⚪             |
+| 6–7  | Polish, case study refinement                | ⚪             |
+| 8    | Case study final + portfolio page            | ⚪             |
+| 9    | Buffer / publish / share                     | ⚪             |
+| 10   | Buffer                                       | ⚪             |
+
+Note: original plan had MCP at Week 4. After Day 9, MCP becomes the central artifact, not a polish task. Bringing it forward.
 
 ---
 
@@ -40,7 +44,7 @@ Most design systems are documented for humans. But increasingly, the consumer is
 - **Token transform:** Style Dictionary v4, mode-aware output
 - **Token architecture:** core + semantic/common + semantic/palette, light + dark
 - **Disabled state:** opacity + pointer-events, not per-palette tokens
-- **AI consumption surfaces:** llms.txt + per-component .llm.md + static API
+- **AI consumption surfaces:** llms.txt + per-component .llm.md + static API + (forthcoming) MCP server
 - **Repo:** public on GitHub
 
 ---
@@ -53,99 +57,116 @@ Repo, scaffolded directories, schema, README, Figma file with empty Variable col
 
 ### Day 2 ✅ Tokens flow Figma → repo as DTCG
 
-`variables2json` plugin + custom normalizer (pivoted from REST API after Figma's Enterprise paywall).
+`variables2json` plugin + custom normalizer.
 
 ### Day 3 ✅ Token pipeline → code
 
-Style Dictionary, Vite + React playground, Tailwind sourced from generated tokens. Badge component E2E with 5 tones.
+Style Dictionary, Vite + React playground, Tailwind sourced from generated tokens. Badge E2E with 5 tones.
 
 ### Day 4 ✅ Three-layer architecture + dual modes
 
-Architecture committed to `docs/token-architecture.md`. Style Dictionary emits both modes into single CSS file. Tailwind exposes common + palette as utilities. Badge migrated to palette tokens. Dark mode toggle.
+Architecture committed to `docs/token-architecture.md`. Both modes in single CSS file. Tailwind exposes common + palette as utilities. Badge migrated to palette tokens. Dark mode toggle.
 
 ### Day 5 ✅ Button spec + state-modifier tokens
 
-Button spec written (~250 lines). 12 new state-modifier tokens. Disabled-as-opacity decision committed.
+Button spec written. 12 new state-modifier tokens. Disabled-as-opacity decision committed.
 
 ### Day 6 ✅ Button + Spinner implementation
 
-Full variant matrix in playground (3 styles × 3 palettes × 3 sizes + states). Both modes verified.
+Full variant matrix in playground. Both modes verified.
 
-### Day 7 ✅ AI consumption layer
+### Day 7 ✅ AI consumption layer v1
 
-`llms.txt`, per-component `.llm.md` generator, static API at `public/api/components.json`. README rewritten around the AI consumption story. `pnpm build:all` chains the full pipeline.
+`llms.txt`, per-component `.llm.md` generator, static API. README rewritten around AI consumption story.
 
 ### Day 8 ✅ AI consumption demo
 
-**Goal:** Validate the AI consumption layer against a fresh Claude conversation. Document outputs, identify gaps.
+Five tests against fresh Claude.ai conversation. Found that full JSON consistently fails at component-consumption layer (3/4 tests bypass `<Button>`). `.llm.md` succeeds. Hypothesis: artifact-format mediates whether models treat the system as a reference document vs. a component library.
 
-**Method:** Five sequential tests, fresh Claude.ai conversation, no project context. Two artifact formats tested: full `components.json` and per-component `.llm.md`. Each test produced verbatim output; outputs graded against per-test rubrics.
+### Day 9 ✅ v2 iteration
 
-**Test outcomes:**
+**Goal:** Apply four targeted fixes from Day 8's synthesis. Re-run failing tests. Document before/after.
 
-| Test | Artifact       | Task                | Result                                                                                                   |
-| ---- | -------------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
-| 1    | full JSON      | submit button       | ✅ Clean pass — proper palette, style, type, label, citations                                            |
-| 2    | full JSON      | confirmation dialog | ⚠️ Composition right, but Button reimplemented as React component; `variant` instead of `style`; raw hex |
-| 3    | full JSON      | disabled + hover    | ⚠️ Token usage right, but skipped Button entirely — raw `<button>` + custom CSS classes                  |
-| 4    | `.llm.md` only | anti-pattern test   | ✅ Clean pass — refused, cited, suggested correction, used Button as JSX, prop names correct             |
-| 5    | full JSON      | invent Toast        | ⚠️ High-quality reasoning, but raw `<button>` for dismiss despite explicitly citing the right pattern    |
+**Fixes applied:**
 
-**Headline finding — the artifact-format hypothesis:**
+1. `llms.txt` restructured — `.llm.md` files prioritized, `components.json` listed as token catalog
+2. Generator updated to lead each `.llm.md` with JSX `## Usage` example
+3. `llms.txt` added prop-name disambiguation (style vs variant) and component-consumption rule (use as JSX, do not reimplement)
+4. `llms.txt` and `components.json` got an `exampleOfCorrectUsage` block
 
-When fed full `components.json`, the model used `<Button>` correctly in 1 of 4 tests.
-When fed `.llm.md`, the model used `<Button>` correctly in 1 of 1 tests.
+**Pipeline bug caught and fixed:** `scripts/build-api.ts` had conventions hardcoded separately from `llms.txt`. Without fixing, v2 conventions wouldn't have flowed to the JSON the model would see. Flagged: two surfaces need a single source of truth for conventions.
 
-The mechanism: full JSON buries components beneath top-level `tokens`, encouraging the model to engage as a _reference document_ (extract values, cite rules, explain choices). `.llm.md` leads with JSX examples and prop tables, encouraging the model to engage as a _component library_ (import, use as JSX, parameterize via props). Both responses are technically correct given the artifact format.
+**Re-tested:** Day 8 Test 2 (composition / delete account dialog) with v2 artifacts. Tests 3 and 5 skipped — Test 2's outcome was strong enough signal.
 
-**Most damning data point:** Test 5's model wrote a code comment that said "ghost neutral, matching the toolbar ghost button pattern from the Button spec verbatim" — and then wrote a raw `<button>` instead of `<Button palette="neutral" style="ghost">`. The failure is consumption-format, not knowledge.
+**What v2 fixed:**
 
-**Strong signals on what works:**
+- ✅ Prop names correct (encoded as `.btn--danger-solid` class names; convention 7 read)
+- ✅ CSS variables used throughout (vs Day 8's inline hex)
+- ✅ State modifier tokens consumed (`-hover`, `-active`)
 
-- Token-level adherence: high across all tests
-- CSS variable usage: consistent (one Test 2 exception)
-- Convention citation: explicit and traceable
-- Anti-pattern refusal: works when prompted to flag conflicts
-- Reasoned justification: model picks tokens against alternatives ("border.muted because subtle would disappear, base would be too heavy")
-- Schema thinking: Test 5 proposed a Toast schema entry that fits the existing model
+**What v2 did not fix:**
 
-**Day 8 case-study significance:**
+- ❌ Model still wrote raw `<button>` elements with custom CSS classes instead of using `<Button>` as JSX
+- ❌ Convention 8 (the explicit "do not reimplement components" rule) overlooked
+- ❌ The `exampleOfCorrectUsage` block overlooked
 
-The arc went from _"we built an AI-native DS"_ to _"we built it, validated it against five LLM tasks, found a consumption-format issue we hadn't anticipated, and have a clear path to v2."_ The failure makes the case study credible. The fix path is concrete.
+**The deeper finding:**
+
+The pattern across two iterations and four data points reveals: when given specs in JSON without an actual importable runtime, models recreate components as code rather than treat them as callable abstractions. The model has no `Button` to import — it has a description of Button. So it builds a button. From the model's perspective, encoding the DS API as `.btn--danger-solid` CSS classes is the most faithful possible implementation — preserving the contract while accepting it has no runtime.
+
+**This is not a documentation failure. It is a packaging failure.**
+
+V1 hypothesis: artifact format mediates consumption. Partially true — but more documentation, however clearly worded, cannot make components callable.
+
+Refined thesis: documentation describes components; only packaging makes them callable. The next layer up is MCP — components as tools the model invokes, not concepts the model describes.
+
+**Case study significance:**
+
+The Days 7–9 arc now reads as a thesis-evolution narrative:
+
+- Day 7: Built three documentation surfaces
+- Day 8: Tested. Found documentation alone consistently fails at component-consumption layer
+- Day 9: Iterated documentation. Some failure modes resolved (prop names, hex values). The core failure mode (component bypass) did not
+- Day 9 finding: documentation describes; packaging makes things callable. Next iteration: MCP server.
+
+This is a stronger thesis than "we built specs and they worked." It's a real finding the next iteration of the AI-native DS field needs to grapple with.
 
 **Artifacts:**
 
-- `docs/ai-demo-day-8.md` — five tests + synthesis, ~complete case study chapter
+- v2 `llms.txt`, `.llm.md` files, `components.json`
+- Day 9 synthesis appended to `docs/ai-demo-day-8.md`
+- v2 build pipeline (with conventions sync bug fix)
 
 ---
 
-### Day 9 🟡 Planned — v2 iteration
+### Day 10 🟡 Planned — MCP server foundation
 
-**Goal:** Implement four targeted fixes to the AI consumption layer. Re-run Tests 2, 3, 5 against v2. Document before/after.
+**Goal:** Stand up an MCP server exposing the design system as callable tools. Components become invocable, not describable.
 
-See `docs/day-9-plan.md` for the execution plan.
+See `docs/day-10-plan.md` for execution.
 
-**The four fixes:**
+**Three core tools to implement:**
 
-1. Restructure `llms.txt` to point at `.llm.md` files first; full JSON listed as token catalog
-2. Lead each `.llm.md` with a JSX usage example
-3. Add explicit consumption rule to `llms.txt`: "components are React components, use as JSX, do not reimplement"
-4. Add prop-name disambiguation note: "this system uses `style` (not `variant`)"
+- `list_components()` — returns names + descriptions
+- `get_component(name)` — returns full spec
+- `render_component(name, props)` — returns rendered JSX string
 
-**Re-runs:** same prompts as Day 8 Tests 2, 3, 5. Compare outcomes side-by-side.
+**Stretch:**
 
-**Time estimate:** 2–2.5 hours. Three fixes are small (1–4 are config/copy changes). The re-runs and comparison documentation are most of the time.
+- `query_tokens(intent)` — semantic search across tokens
+- `validate_usage(jsx_string)` — checks if a candidate JSX uses the DS correctly
+
+**Time estimate:** 2.5–3 hrs.
 
 ---
 
 ## Open questions / parking lot
 
-- **Synthesis validation:** Day 8's synthesis was written end-of-day. Worth re-reading after a break before locking it in.
+- **Conventions single source:** `llms.txt` and `build-api.ts` need to share a source. Defer to Week 4 cleanup.
 - **Case study format:** long-form post, personal site page, or video walkthrough?
-- **MCP server hosting:** local-only demo or Cloudflare Workers / Vercel?
+- **MCP server hosting:** local-only (stdio) for demo, or HTTP-deployable for live demo?
 - **Per-palette focus rings:** still deferred.
 - **Token reference validation:** still pending.
-- **Tokens Studio:** for the demo video.
 - **Outline button style:** still deferred.
 
 ---
@@ -154,7 +175,7 @@ See `docs/day-9-plan.md` for the execution plan.
 
 - **DTCG** — Design Tokens Community Group format
 - **Spec** — `component.spec.json` file; machine-readable contract
-- **MCP** — Model Context Protocol; Anthropic's standard for exposing tools/data to LLMs
+- **MCP** — Model Context Protocol; Anthropic's standard for exposing tools/data to LLMs as callable functions
 - **cva** — class-variance-authority; library for typed Tailwind variant config
 - **Style Dictionary** — Amazon's token JSON build tool
 - **Palette** — named color treatment consumed by components via variant prop
@@ -164,7 +185,8 @@ See `docs/day-9-plan.md` for the execution plan.
 - **State modifier** — token suffix encoding interaction state (`-hover`, `-active`)
 - **`.llm.md`** — per-component AI-optimized documentation; generated from spec
 - **Static API** — `public/api/components.json`; single-fetch endpoint exposing the full design system
+- **Callable abstraction** — a component the model can invoke (via import, MCP tool, etc.) rather than describe in code
 
 ---
 
-_Last updated: end of Day 8._
+_Last updated: end of Day 9._

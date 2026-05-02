@@ -77,6 +77,29 @@ function generateLlmMd(spec: Spec): string {
   lines.push(spec.description)
   lines.push('')
 
+  // Usage — lead with JSX example so model anchors on consumption pattern
+  const firstExample = spec.examples?.[0]
+  if (firstExample) {
+    lines.push('## Usage')
+    lines.push('')
+    lines.push('```jsx')
+    lines.push(firstExample.code)
+    lines.push('```')
+    lines.push('')
+  } else {
+    // Fallback: build a minimal usage from defaults
+    const defaultProps = Object.entries(spec.props)
+      .filter(([_, def]: [string, any]) => def.default !== undefined)
+      .map(([name, def]: [string, any]) => `${name}="${def.default}"`)
+      .join(' ')
+    lines.push('## Usage')
+    lines.push('')
+    lines.push('```jsx')
+    lines.push(`<${spec.name}${defaultProps ? ' ' + defaultProps : ''} />`)
+    lines.push('```')
+    lines.push('')
+  }
+
   // Props
   lines.push('## Props')
   lines.push('')
@@ -192,6 +215,27 @@ async function main() {
   }
 
   console.log(`\nGenerated ${count} LLM docs.`)
+}
+
+function buildUsageExample(spec: Spec): string {
+  // Prefer the first explicit example
+  if (spec.examples?.length && spec.examples[0]?.code) {
+    return spec.examples[0].code
+  }
+
+  // Fallback: construct from props with defaults
+  const propsList: string[] = []
+  for (const [propName, def] of Object.entries(spec.props)) {
+    if (def.default !== undefined && propName !== 'children') {
+      const v = typeof def.default === 'string' ? `"${def.default}"` : `{${def.default}}`
+      propsList.push(`${propName}=${v}`)
+    }
+  }
+  const propsStr = propsList.length ? ' ' + propsList.join(' ') : ''
+  const hasChildren = 'children' in spec.props
+  return hasChildren
+    ? `<${spec.name}${propsStr}>...</${spec.name}>`
+    : `<${spec.name}${propsStr} />`
 }
 
 main().catch(err => {

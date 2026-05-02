@@ -2,6 +2,12 @@
 
 Indicates ongoing background activity. Inherits color from parent via currentColor — meant to be embedded in components like Button (loading state) or used standalone for fetch indicators. For full-page or section loading, use Skeleton instead.
 
+## Usage
+
+```jsx
+<Button loading>Saving</Button>
+```
+
 ## Props
 
 size: sm | md | lg (default: "md")

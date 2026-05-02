@@ -2,6 +2,12 @@
 
 Triggers an action. Use for: submitting forms, confirming dialogs, opening menus, primary actions in views. Not for navigation between pages — use Link. Not for binary toggles — use ToggleButton.
 
+## Usage
+
+```jsx
+<Button palette="primary" style="solid" type="submit">Save changes</Button>
+```
+
 ## Props
 
 palette: neutral | primary | danger (default: "neutral")

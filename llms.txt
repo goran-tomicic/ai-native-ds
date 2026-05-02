@@ -8,10 +8,17 @@ Most design systems are documented for humans browsing a docs site. This one tre
 
 ## How to use this
 
-- For component contracts: read /api/components.json (all specs in one file) or fetch individual /components/{name}/spec.json
-- For tokens: read /api/tokens.json or /tokens/*.tokens.json
-- For per-component AI-optimized docs: /components/{name}/{name}.llm.md
-- For architecture reasoning: /docs/token-architecture.md
+For building UI with this system:
+- Read /components/{name}/{name}.llm.md for each component you need.
+- Each .llm.md is a complete contract: usage, props, rules, anti-patterns, examples.
+- **Always import components as JSX. Never reimplement them or write raw HTML when a component exists.** If a Button is needed, use `<Button palette="..." style="..." />`. Do not write `<button>` and reproduce the styling manually.
+
+For querying tokens or programmatic lookups:
+- /api/components.json — full system as one JSON, queryable
+- /tokens/{core,semantic.light,semantic.dark}.tokens.json — DTCG sources
+
+For architecture reasoning:
+- /docs/token-architecture.md
 
 ## Components shipped
 
@@ -34,8 +41,27 @@ Components reference semantic tokens. Primitives are escape hatches.
 2. Pick palette by intent: primary for canonical actions, danger for destructive, neutral for secondary.
 3. One primary action per view.
 4. Disabled state = opacity 40 + pointer-events none, NOT a different palette color.
-5. Focus rings use `--color-common-border-focus` (currently primary-blue, may evolve).
+5. Focus rings use `--color-common-border-focus`.
 6. Light/dark handled via `[data-theme="dark"]` attribute on `<html>`. Components don't need to know which mode is active.
+7. **Prop naming note:** this system uses `style` (not `variant`) as the prop for visual treatment on components like Button. If you're trained on systems that use `variant` (shadcn, Tailwind UI, Radix), explicitly override that pattern when working in this system.
+8. **Component consumption rule:** components are React components. Import and use them as JSX primitives. Do not reimplement components, write raw HTML elements when a component exists, or recreate variant logic in custom CSS. The system's components handle their own variants, hover states, focus rings, and disabled treatment.
+
+## Example of correct usage
+
+This is a confirmation dialog using only the design system's components:
+
+```jsx
+<div role="dialog" aria-modal="true">
+  <h2>Delete account?</h2>
+  <p>This action cannot be undone.</p>
+  <div className="dialog-footer">
+    <Button palette="neutral" style="subtle">Cancel</Button>
+    <Button palette="danger" style="solid" onClick={confirm}>Delete account</Button>
+  </div>
+</div>
+```
+
+Note what's NOT in the code: no custom Button reimplementation, no raw `<button>` tags, no inline color styles, no hand-rolled hover handlers. The system's components handle their own variants, hover states, focus rings, and disabled treatment.
 
 ## Repo
 
@@ -43,4 +69,4 @@ https://github.com/goran-tomicic/ai-native-ds
 
 ## Status
 
-Week 2 of a 10-week experiment. Active development.
+Week 3 of a 10-week experiment. Active development. v2 of the AI consumption layer.
