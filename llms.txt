@@ -22,9 +22,9 @@ For architecture reasoning:
 
 ## Components shipped
 
-- Badge — passive label, palette consumer (subtle style only)
-- Button — action trigger, 3 styles × 3 palettes × 3 sizes, full state coverage
-- Spinner — loading indicator, color-inheriting
+- Badge — A small visual label used to annotate or call out a status, count, or category
+- Button — Triggers an action
+- Spinner — Indicates ongoing background activity
 
 ## Token model (summary)
 
@@ -37,18 +37,18 @@ Components reference semantic tokens. Primitives are escape hatches.
 
 ## Conventions for AI-generated UI using this system
 
-1. Use semantic tokens, not primitives. `bg-primary-base` not `bg-blue-600`.
-2. Pick palette by intent: primary for canonical actions, danger for destructive, neutral for secondary.
-3. One primary action per view.
-4. Disabled state = opacity 40 + pointer-events none, NOT a different palette color.
-5. Focus rings use `--color-common-border-focus`.
-6. Light/dark handled via `[data-theme="dark"]` attribute on `<html>`. Components don't need to know which mode is active.
-7. **Prop naming note:** this system uses `style` (not `variant`) as the prop for visual treatment on components like Button. If you're trained on systems that use `variant` (shadcn, Tailwind UI, Radix), explicitly override that pattern when working in this system.
-8. **Component consumption rule:** components are React components. Import and use them as JSX primitives. Do not reimplement components, write raw HTML elements when a component exists, or recreate variant logic in custom CSS. The system's components handle their own variants, hover states, focus rings, and disabled treatment.
+1. Use semantic tokens, not primitives
+2. Pick palette by intent: primary for canonical actions, danger for destructive, neutral for secondary
+3. One primary action per view
+4. Disabled state = opacity 40 + pointer-events none, NOT a different palette
+5. Focus rings use --color-common-border-focus
+6. Light/dark via [data-theme="dark"] attribute on <html>
+7. PROP NAMING: this system uses `style` (not `variant`) as the prop for visual treatment on components like Button. If you are trained on systems that use `variant` (shadcn, Tailwind UI, Radix), explicitly override that pattern when working in this system.
+8. COMPONENT CONSUMPTION: components are React components. Import and use them as JSX primitives. Do NOT reimplement components, write raw HTML elements when a component exists, or recreate variant logic in custom CSS. The system's components handle their own variants, hover states, focus rings, and disabled treatment.
 
 ## Example of correct usage
 
-This is a confirmation dialog using only the design system's components:
+A confirmation dialog using only the design system's components:
 
 ```jsx
 <div role="dialog" aria-modal="true">
@@ -61,7 +61,7 @@ This is a confirmation dialog using only the design system's components:
 </div>
 ```
 
-Note what's NOT in the code: no custom Button reimplementation, no raw `<button>` tags, no inline color styles, no hand-rolled hover handlers. The system's components handle their own variants, hover states, focus rings, and disabled treatment.
+Note what is NOT in the code: no custom Button reimplementation, no raw <button> tags, no inline color styles, no hand-rolled hover handlers. The system handles variants, hover, focus rings, and disabled treatment.
 
 ## Repo
 
@@ -69,4 +69,4 @@ https://github.com/goran-tomicic/ai-native-ds
 
 ## Status
 
-Week 3 of a 10-week experiment. Active development. v2 of the AI consumption layer.
+Active development. Generated from machine-readable sources.

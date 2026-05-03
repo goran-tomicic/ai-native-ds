@@ -7,6 +7,7 @@ import {
 import { readFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { renderComponentHtml } from './render-html.js'
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 const __filename = fileURLToPath(import.meta.url)
@@ -58,26 +59,29 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       },
     },
     {
-      name: 'render_component',
+      name: 'render_component_jsx',
       description:
-        'Renders a verified-correct JSX invocation of a design system component. Use this INSTEAD of writing JSX manually. The tool validates props against the spec and returns the canonical invocation. This is the primary way to consume the design system — do not reimplement components or write raw HTML when this tool is available.',
+        'Renders a verified-correct JSX invocation of a design system component. Use this when editing files where JSX will be compiled and run by React (e.g., .tsx files in a project). Returns a string like `<Button palette="primary">Save</Button>` ready to be inserted into source code. Validates props against the spec.',
       inputSchema: {
         type: 'object',
         properties: {
-          name: {
-            type: 'string',
-            description: 'Component name. Case-insensitive.',
-          },
-          props: {
-            type: 'object',
-            description:
-              'Props to pass. Must match the component spec — get_component shows valid props and values.',
-          },
-          children: {
-            type: 'string',
-            description:
-              'Children content (text label, e.g. "Save changes"). Optional.',
-          },
+          name:     { type: 'string', description: 'Component name. Case-insensitive.' },
+          props:    { type: 'object', description: 'Props matching the component spec.' },
+          children: { type: 'string', description: 'Children content (text). Optional.' },
+        },
+        required: ['name'],
+      },
+    },
+    {
+      name: 'render_component_html',
+      description:
+        'Renders a design system component as HTML with inline styles using CSS variables. Use this when producing HTML artifacts (e.g., a self-contained .html file or a sandboxed HTML preview where React is not available). Returns a string like `<button style="background: var(--color-palette-primary-base); ...">Save</button>` ready to be inserted into HTML output. Validates props against the spec. The HTML output respects the design system\'s tokens via CSS variables; the consuming HTML must define those variables (typically via :root and [data-theme="dark"] blocks).',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name:     { type: 'string', description: 'Component name. Case-insensitive.' },
+          props:    { type: 'object', description: 'Props matching the component spec.' },
+          children: { type: 'string', description: 'Children content (text). Optional.' },
         },
         required: ['name'],
       },
@@ -125,7 +129,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
   }
 
-  if (name === 'render_component') {
+  if (name === 'render_component_jsx') {
     const api = await loadApi()
     const componentName = String(args?.name ?? '').toLowerCase()
     const spec = api.components[componentName]
@@ -195,6 +199,57 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           text: jsx,
         },
       ],
+    }
+  }
+
+  if (name === 'render_component_html') {
+    const api = await loadApi()
+    const componentName = String(args?.name ?? '').toLowerCase()
+    const spec = api.components[componentName]
+    if (!spec) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Component "${args?.name}" not found. Available: ${Object.keys(api.components).join(', ')}`,
+          },
+        ],
+        isError: true,
+      }
+    }
+
+    const props = (args?.props as Record<string, unknown>) ?? {}
+    const children = args?.children as string | undefined
+
+    // Reuse the same prop validation as JSX
+    const errors: string[] = []
+    for (const [key, value] of Object.entries(props)) {
+      const def = spec.props[key]
+      if (!def) {
+        errors.push(
+          `Unknown prop "${key}". Valid props: ${Object.keys(spec.props).join(', ')}`
+        )
+        continue
+      }
+      if (def.type === 'enum' && !def.values.includes(value)) {
+        errors.push(
+          `Prop "${key}" got "${value}". Expected one of: ${def.values.join(', ')}`
+        )
+      }
+    }
+
+    if (errors.length) {
+      return {
+        content: [
+          { type: 'text', text: `Validation errors (component not rendered):\n\n${errors.join('\n')}` },
+        ],
+        isError: true,
+      }
+    }
+
+    const html = renderComponentHtml(spec, props as Record<string, any>, children)
+    return {
+      content: [{ type: 'text', text: html }],
     }
   }
 

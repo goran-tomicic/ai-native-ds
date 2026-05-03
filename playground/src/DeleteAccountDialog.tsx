@@ -1,92 +1,108 @@
-import { forwardRef, useState } from 'react'
 import { Button } from '../../components/button/button'
 
-export interface DeleteAccountDialogProps extends React.HTMLAttributes<HTMLDivElement> {
-  accountEmail?: string
-  onConfirm?: () => void | Promise<void>
-  onCancel?: () => void
+interface DeleteAccountDialogProps {
+  onConfirm: () => void
+  onCancel: () => void
+  open?: boolean
 }
 
-export const DeleteAccountDialog = forwardRef<HTMLDivElement, DeleteAccountDialogProps>(
-  ({ accountEmail, onConfirm, onCancel, className, ...props }, ref) => {
-    const [isDeleting, setIsDeleting] = useState(false)
+export function DeleteAccountDialog({ onConfirm, onCancel, open = true }: DeleteAccountDialogProps) {
+  if (!open) return null
 
-    const handleConfirm = async () => {
-      if (!onConfirm) return
-
-      setIsDeleting(true)
-      try {
-        await onConfirm()
-      } finally {
-        setIsDeleting(false)
-      }
-    }
-
-    return (
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        zIndex: 50,
+      }}
+      onClick={onCancel}
+    >
       <div
-        ref={ref}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-sm"
-        {...props}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-dialog-title"
+        style={{
+          backgroundColor: 'var(--color-common-surface-overlay)',
+          border: '1px solid var(--color-common-border-muted)',
+          borderRadius: 'var(--radius-lg)',
+          padding: 'var(--space-6)',
+          width: '100%',
+          maxWidth: '440px',
+          boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
+        }}
+        onClick={e => e.stopPropagation()}
       >
-        <div className="bg-surface-base border border-subtle rounded-lg shadow-lg max-w-md w-full mx-4">
-          {/* Header */}
-          <div className="px-6 pt-6 pb-4 border-b border-subtle">
-            <h2 className="text-lg font-semibold text-fg-strong">
-              Delete account
-            </h2>
-          </div>
+        <h2
+          id="delete-dialog-title"
+          style={{
+            margin: '0 0 var(--space-2)',
+            fontSize: '18px',
+            fontWeight: 600,
+            color: 'var(--color-common-fg-strong)',
+          }}
+        >
+          Delete your account?
+        </h2>
 
-          {/* Content */}
-          <div className="px-6 py-4 space-y-4">
-            <p className="text-sm text-fg-base leading-relaxed">
-              Are you sure you want to delete your account? This action cannot be undone.
-            </p>
+        <p
+          style={{
+            margin: '0 0 var(--space-4)',
+            fontSize: '14px',
+            color: 'var(--color-common-fg-muted)',
+          }}
+        >
+          This action is permanent and cannot be undone. The following will be deleted immediately:
+        </p>
 
-            {accountEmail && (
-              <div className="bg-danger-subtle border border-danger-muted rounded-md px-4 py-3">
-                <p className="text-sm text-fg-base">
-                  <span className="font-medium text-fg-strong">Account:</span>{' '}
-                  <span className="font-mono">{accountEmail}</span>
-                </p>
-              </div>
-            )}
+        <ul
+          style={{
+            margin: '0 0 var(--space-4)',
+            paddingLeft: 'var(--space-6)',
+            fontSize: '14px',
+            color: 'var(--color-common-fg-base)',
+            lineHeight: 1.7,
+          }}
+        >
+          <li>Your profile and personal data</li>
+          <li>All projects and uploaded files</li>
+          <li>Billing history and active subscriptions</li>
+          <li>Access to all shared workspaces</li>
+        </ul>
 
-            <div className="bg-canvas-subtle border border-subtle rounded-md px-4 py-3">
-              <p className="text-xs font-medium text-fg-strong mb-2">
-                This will permanently:
-              </p>
-              <ul className="text-xs text-fg-muted space-y-1.5 list-disc list-inside">
-                <li>Delete all your personal data</li>
-                <li>Remove access to all projects and workspaces</li>
-                <li>Cancel any active subscriptions</li>
-                <li>Invalidate all sessions and API keys</li>
-              </ul>
-            </div>
-          </div>
+        <div
+          style={{
+            backgroundColor: 'var(--color-palette-danger-subtle)',
+            border: '1px solid var(--color-palette-danger-muted)',
+            borderRadius: 'var(--radius-md)',
+            padding: 'var(--space-3) var(--space-4)',
+            marginBottom: 'var(--space-6)',
+            fontSize: '14px',
+            color: 'var(--color-palette-danger-bold)',
+          }}
+        >
+          Your account cannot be recovered after deletion. If you have an active subscription, it will be cancelled immediately with no refund.
+        </div>
 
-          {/* Actions */}
-          <div className="px-6 py-4 border-t border-subtle flex items-center justify-end gap-3">
-            <Button
-              palette="neutral"
-              style="subtle"
-              onClick={onCancel}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              palette="danger"
-              style="solid"
-              onClick={handleConfirm}
-              loading={isDeleting}
-            >
-              Delete account
-            </Button>
-          </div>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 'var(--space-2)',
+          }}
+        >
+          <Button palette="neutral" style="subtle" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button palette="danger" style="solid" onClick={onConfirm}>
+            Delete account
+          </Button>
         </div>
       </div>
-    )
-  }
-)
-
-DeleteAccountDialog.displayName = 'DeleteAccountDialog'
+    </div>
+  )
+}
