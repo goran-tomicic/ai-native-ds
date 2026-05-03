@@ -12,7 +12,8 @@
     "validate:specs": "ajv validate -s schemas/component.schema.json -d 'components/**/*.spec.json'",
     "docs:llm": "tsx scripts/generate-llm-docs.ts",
     "api:build": "tsx scripts/build-api.ts",
-    "build:all": "pnpm tokens:build && pnpm docs:llm && pnpm api:build"
+    "docs:llms":  "tsx scripts/generate-llms-txt.ts",
+    "build:all":  "pnpm tokens:build && pnpm docs:llm && pnpm docs:llms && pnpm api:build"
   },
   "keywords": [],
   "author": "",
