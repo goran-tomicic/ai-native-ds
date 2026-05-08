@@ -1,0 +1,290 @@
+{
+  "$schema": "../../schemas/component.schema.json",
+  "name": "Input",
+  "version": "0.1.0",
+  "status": "experimental",
+  "category": "form",
+  "description": "Single-line text input. Composes with FormField for label/helper/error layout, and with Input.LeadingIcon / Input.TrailingIcon for adornments. Type-agnostic at this version: text only. Future: email, password, number, tel, etc.",
+
+  "props": {
+    "state": {
+      "type": "enum",
+      "values": ["default", "error", "success"],
+      "default": "default",
+      "description": "Validation state. Distinct from Button's palette — this is intrinsic to the input's current value, not the action's intent.",
+      "guidance": {
+        "default": "Initial state. No validation has fired or all fields are valid.",
+        "error":   "Field has a validation problem. Pair with a FormField error message.",
+        "success": "Field has passed validation. Use sparingly — every valid field doesn't need a green ring."
+      }
+    },
+    "variant": {
+      "type": "enum",
+      "values": ["outlined", "filled", "ghost"],
+      "default": "outlined",
+      "description": "Visual treatment.",
+      "guidance": {
+        "outlined": "Default. Border on all sides, transparent background. Works on any surface.",
+        "filled":   "Tinted background, no visible border at rest. Good for compact forms or when reducing visual noise.",
+        "ghost":    "Transparent background, border only at bottom. Use sparingly — search bars, inline editing, dense UIs."
+      }
+    },
+    "size": {
+      "type": "enum",
+      "values": ["sm", "md", "lg"],
+      "default": "md",
+      "description": "Physical size. sm in dense contexts (table rows, toolbars). md is default. lg for hero forms or mobile-primary inputs."
+    },
+    "disabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Prevents interaction. Reduces opacity to indicate non-interactive state. Disabled appearance is state-agnostic — disabled error and disabled success look the same as disabled default."
+    },
+    "readonly": {
+      "type": "boolean",
+      "default": false,
+      "description": "Prevents editing but keeps the value selectable and copyable. Different from disabled: readonly fields are still interactive for reading."
+    },
+    "placeholder": {
+      "type": "string",
+      "optional": true,
+      "description": "Placeholder text shown when value is empty. Not a substitute for a label — placeholders disappear when typing and have known a11y problems."
+    },
+    "value": {
+      "type": "string",
+      "optional": true,
+      "description": "Controlled value. If provided, Input is controlled; otherwise it manages its own state."
+    },
+    "defaultValue": {
+      "type": "string",
+      "optional": true,
+      "description": "Uncontrolled initial value."
+    },
+    "onChange": {
+      "type": "(event: ChangeEvent<HTMLInputElement>) => void",
+      "optional": true,
+      "description": "Standard React change handler."
+    },
+    "name": {
+      "type": "string",
+      "optional": true,
+      "description": "Form field name. Required if used inside a form for data submission."
+    },
+    "id": {
+      "type": "string",
+      "optional": true,
+      "description": "DOM id. Important when paired with FormField — the FormField label's htmlFor must match this id."
+    }
+  },
+
+  "states": ["default", "hover", "focus", "disabled", "readonly", "error", "success"],
+
+  "tokens": {
+    "state_mapping": {
+      "default": "color.common.border",
+      "error":   "color.palette.danger",
+      "success": "color.palette.success"
+    },
+    "variant_slots": {
+      "outlined": {
+        "bg":           "color.common.surface.base",
+        "border":       "{state}.base",
+        "border_focus": "{state}.base"
+      },
+      "filled": {
+        "bg":           "color.common.bg.subtle",
+        "bg_focus":     "color.common.surface.base",
+        "border":       "transparent",
+        "border_focus": "{state}.base"
+      },
+      "ghost": {
+        "bg":           "transparent",
+        "border":       "transparent",
+        "border_focus": "{state}.base",
+        "border_bottom": "{state}.base"
+      }
+    },
+    "shared": {
+      "fg":              "color.common.fg.strong",
+      "placeholder":     "color.common.fg.subtle",
+      "focus_ring":      "color.common.border.focus",
+      "radius":          "radius.md",
+      "padding.sm":      "space.1 space.2",
+      "padding.md":      "space.2 space.3",
+      "padding.lg":      "space.3 space.4",
+      "font.sm":         "13px",
+      "font.md":         "14px",
+      "font.lg":         "16px",
+      "height.sm":       "28px",
+      "height.md":       "36px",
+      "height.lg":       "44px"
+    },
+    "effects": {
+      "disabled_opacity":        "0.4",
+      "disabled_pointer_events": "none",
+      "transition":              "border-color 120ms ease, background-color 120ms ease, opacity 120ms ease"
+    }
+  },
+
+  "accessibility": {
+    "role": "textbox",
+    "keyboard": ["Tab", "Shift+Tab"],
+    "requirements": [
+      "Must have an accessible label — either via FormField's <label htmlFor>, aria-label, or aria-labelledby",
+      "Error state must be announced — pair with FormField error message that has aria-live='polite' or aria-describedby",
+      "Focus ring must be visible — never set outline:none without replacement",
+      "Placeholder is NOT a label substitute — placeholders fail screen reader tests and disappear when typing"
+    ],
+    "contrast": "4.5:1 minimum for input text. State borders (error/success) must be visible without relying on color alone — pair with iconography or text in FormField."
+  },
+
+  "composition": {
+    "allowedChildren": ["Input.LeadingIcon", "Input.TrailingIcon"],
+    "forbiddenChildren": ["Button", "text", "Input"],
+    "commonParents": ["FormField", "Form", "Card.Body", "Dialog.Body"]
+  },
+
+  "subcomponents": [
+    {
+      "name": "Input.LeadingIcon",
+      "description": "Icon rendered inside the input on the left (LTR). Inherits the input's text color and adjusts padding so input text doesn't overlap the icon.",
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "description": "Icon element. Recommended size: 16px square."
+        }
+      },
+      "rules": {
+        "do": [
+          "Use for visual signals like a search magnifier, calendar icon for date input, or @ for email",
+          "Keep icons monochromatic — they inherit currentColor"
+        ],
+        "dont": [
+          "Don't use as an interactive button — leading icon is a visual cue, not a control. Use Input.TrailingIcon for interactive elements like clear-buttons.",
+          "Don't put text in here. Icons only."
+        ]
+      },
+      "examples": [
+        {
+          "name": "Search input",
+          "code": "<Input>\n  <Input.LeadingIcon><SearchIcon /></Input.LeadingIcon>\n</Input>",
+          "context": "Search bar in a header"
+        }
+      ]
+    },
+    {
+      "name": "Input.TrailingIcon",
+      "description": "Icon rendered inside the input on the right (LTR). Can be visual (validation indicator) or interactive (clear button, password toggle).",
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "description": "Icon element or button containing icon."
+        },
+        "interactive": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the icon is clickable. When true, increases hit target and changes cursor."
+        }
+      },
+      "rules": {
+        "do": [
+          "Use interactive=true for clear buttons, password visibility toggles, dropdown triggers",
+          "When interactive, the child should be a Button or button-shaped element with proper aria-label"
+        ],
+        "dont": [
+          "Don't put a Button component inside without interactive=true — clicks won't have proper hit area",
+          "Don't combine validation icons with interactive icons in the same trailing slot — split into a separate adornment if needed"
+        ]
+      },
+      "examples": [
+        {
+          "name": "Clear button",
+          "code": "<Input value={value}>\n  <Input.TrailingIcon interactive>\n    <button onClick={() => setValue('')} aria-label=\"Clear\"><XIcon /></button>\n  </Input.TrailingIcon>\n</Input>",
+          "context": "Search input with clear functionality"
+        },
+        {
+          "name": "Validation indicator",
+          "code": "<Input state=\"success\">\n  <Input.TrailingIcon><CheckIcon /></Input.TrailingIcon>\n</Input>",
+          "context": "Successfully validated email field"
+        }
+      ]
+    }
+  ],
+
+  "rules": {
+    "do": [
+      "Pair with FormField for label, helper text, and error messages",
+      "Use placeholder for examples or format hints, not as a label substitute",
+      "Match input size to surrounding form: sm for compact tables, md for forms, lg for hero auth pages",
+      "When using state='error', also surface the error message in the FormField's error slot",
+      "Set name and id when used in real forms — both are needed for label association and form submission"
+    ],
+    "dont": [
+      "Don't use placeholder as a label — known a11y failure pattern",
+      "Don't use state='success' for every valid field — green rings on every input is visual noise",
+      "Don't override the disabled opacity — the dim is the affordance",
+      "Don't put a Button as a direct child — use Input.TrailingIcon with interactive=true",
+      "Don't reach for ghost variant outside of search bars or inline editing — outlined is the default for a reason"
+    ]
+  },
+
+  "examples": [
+    {
+      "name": "Basic text input",
+      "code": "<Input placeholder=\"Email\" />",
+      "context": "Simple form field"
+    },
+    {
+      "name": "Search input with leading icon",
+      "code": "<Input variant=\"filled\" placeholder=\"Search...\">\n  <Input.LeadingIcon><SearchIcon /></Input.LeadingIcon>\n</Input>",
+      "context": "Header search bar"
+    },
+    {
+      "name": "Error state",
+      "code": "<Input state=\"error\" value={email} onChange={handleChange} />",
+      "context": "Form field with validation error — pair with FormField error message"
+    },
+    {
+      "name": "Disabled input",
+      "code": "<Input value=\"Read-only value\" disabled />",
+      "context": "Account email that can't be changed"
+    },
+    {
+      "name": "Small size in toolbar",
+      "code": "<Input size=\"sm\" placeholder=\"Filter...\" />",
+      "context": "Table filter or compact toolbar"
+    }
+  ],
+
+  "antiPatterns": [
+    {
+      "bad":  "<Input placeholder=\"Email address\" />",
+      "good": "<FormField label=\"Email\"><Input placeholder=\"name@company.com\" /></FormField>",
+      "why":  "Placeholders disappear when typing and have known accessibility problems. Use FormField for the label, placeholder for format hints."
+    },
+    {
+      "bad":  "<Input state=\"error\" />",
+      "good": "<FormField error=\"Invalid email format\"><Input state=\"error\" /></FormField>",
+      "why":  "Error visual without an error message means the user knows something is wrong but not what. Always pair state='error' with explanatory text in FormField."
+    },
+    {
+      "bad":  "<Input><Button onClick={clear}>Clear</Button></Input>",
+      "good": "<Input><Input.TrailingIcon interactive><button onClick={clear} aria-label=\"Clear\"><XIcon /></button></Input.TrailingIcon></Input>",
+      "why":  "Button as a direct child won't render with proper hit area or styling inside an input. Use Input.TrailingIcon to compose interactive trailing elements correctly."
+    },
+    {
+      "bad":  "<Input variant=\"ghost\" />",
+      "good": "<Input variant=\"outlined\" />",
+      "why":  "Ghost variant has minimal visual affordance and is hard to discover. Reserve for search bars and inline editing where context already signals it's an input. Outlined is the right default for forms."
+    }
+  ],
+
+  "related": {
+    "use_instead_when": [
+      { "component": "Textarea",   "when": "multi-line text input is needed" },
+      { "component": "Select",     "when": "choosing from a known list of options" },
+      { "component": "Combobox",   "when": "filtering a list with text input" },
+      { "component": "FormField",  "when": "wrapping Input with label, helper, or error message" }
+    ]
+  }
+}

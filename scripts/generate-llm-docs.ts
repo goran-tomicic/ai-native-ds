@@ -19,6 +19,13 @@ type Spec = {
   examples?: Array<{ name: string; code: string; context?: string }>
   antiPatterns?: Array<{ bad: string; good: string; why: string }>
   related?: { use_instead_when?: Array<{ component: string; when: string }> }
+  subcomponents?: Array<{
+    name: string
+    description: string
+    props?: Record<string, any>
+    rules?: { do?: string[]; dont?: string[] }
+    examples?: Array<{ name: string; code: string; context?: string }>
+  }>
 }
 
 function formatPropLine(name: string, def: any): string {
@@ -175,6 +182,40 @@ function generateLlmMd(spec: Spec): string {
       lines.push(`${ex.name}: ${ex.code}${ctx}`)
     }
     lines.push('')
+  }
+
+  // Subcomponents (if any)
+  if (spec.subcomponents?.length) {
+    lines.push('## Subcomponents')
+    lines.push('')
+    for (const sub of spec.subcomponents) {
+      lines.push(`### ${sub.name}`)
+      lines.push('')
+      lines.push(sub.description)
+      lines.push('')
+      if (sub.props) {
+        for (const [propName, def] of Object.entries(sub.props)) {
+          lines.push(formatPropLine(propName, def))
+        }
+        lines.push('')
+      }
+      if (sub.rules?.do?.length) {
+        for (const rule of sub.rules.do) lines.push(`- ${rule}`)
+      }
+      if (sub.rules?.dont?.length) {
+        for (const rule of sub.rules.dont) lines.push(`- DON'T: ${rule}`)
+      }
+      if (sub.rules?.do?.length || sub.rules?.dont?.length) lines.push('')
+      if (sub.examples?.length) {
+        for (const ex of sub.examples) {
+          lines.push(`Example (${ex.context ?? sub.name}):`)
+          lines.push('```jsx')
+          lines.push(ex.code)
+          lines.push('```')
+        }
+        lines.push('')
+      }
+    }
   }
 
   // Related (when to use something else)

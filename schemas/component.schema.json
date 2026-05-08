@@ -100,6 +100,46 @@
     },
     "related": {
       "type": "object"
+    },
+    "subcomponents": {
+      "type": "array",
+      "description": "Sub-components that compose with this component (e.g. Input.LeadingIcon). Each subcomponent is a callable JSX element accessed via dot notation.",
+      "items": {
+        "type": "object",
+        "required": ["name", "description"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Subcomponent name. Used as `ParentName.SubcomponentName` in JSX."
+          },
+          "description": {
+            "type": "string",
+            "description": "What the subcomponent does."
+          },
+          "props": {
+            "type": "object",
+            "description": "Subcomponent props. Same shape as parent component props."
+          },
+          "rules": {
+            "type": "object",
+            "properties": {
+              "do":   { "type": "array", "items": { "type": "string" } },
+              "dont": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "examples": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name":    { "type": "string" },
+                "code":    { "type": "string" },
+                "context": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
