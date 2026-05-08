@@ -35,7 +35,6 @@
   "states": ["default"],
 
   "tokens": {
-    "style": "subtle",
     "palette_mapping": {
       "neutral": "color.palette.neutral",
       "info":    "color.palette.primary",

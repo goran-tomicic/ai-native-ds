@@ -95,10 +95,10 @@ export function DeleteAccountDialog({ onConfirm, onCancel, open = true }: Delete
             gap: 'var(--space-2)',
           }}
         >
-          <Button palette="neutral" style="subtle" onClick={onCancel}>
+          <Button palette="neutral" variant="subtle" onClick={onCancel}>
             Cancel
           </Button>
-          <Button palette="danger" style="solid" onClick={onConfirm}>
+          <Button palette="danger" variant="solid" onClick={onConfirm}>
             Delete account
           </Button>
         </div>

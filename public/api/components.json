@@ -1,7 +1,7 @@
 {
   "$schema": "https://github.com/goran-tomicic/ai-native-ds/blob/main/schemas/component.schema.json",
   "version": "0.1.0",
-  "generatedAt": "2026-05-03T07:50:00.330Z",
+  "generatedAt": "2026-05-08T20:27:36.150Z",
   "overview": {
     "name": "ai-native-ds",
     "description": "Design system built for AI agents as first-class consumers.",
@@ -12,12 +12,12 @@
       "Disabled state = opacity 40 + pointer-events none, NOT a different palette",
       "Focus rings use --color-common-border-focus",
       "Light/dark via [data-theme=\"dark\"] attribute on <html>",
-      "PROP NAMING: this system uses `style` (not `variant`) as the prop for visual treatment on components like Button. If you are trained on systems that use `variant` (shadcn, Tailwind UI, Radix), explicitly override that pattern when working in this system.",
+      "PROP NAMING: this system uses `variant` (not `style`) as the prop for visual treatment on components like Button. If you are trained on systems that use `variant` (shadcn, Tailwind UI, Radix), explicitly override that pattern when working in this system.",
       "COMPONENT CONSUMPTION: components are React components. Import and use them as JSX primitives. Do NOT reimplement components, write raw HTML elements when a component exists, or recreate variant logic in custom CSS. The system's components handle their own variants, hover states, focus rings, and disabled treatment."
     ],
     "exampleOfCorrectUsage": {
       "description": "A confirmation dialog using only the design system's components",
-      "code": "<div role=\"dialog\" aria-modal=\"true\">\n  <h2>Delete account?</h2>\n  <p>This action cannot be undone.</p>\n  <div className=\"dialog-footer\">\n    <Button palette=\"neutral\" style=\"subtle\">Cancel</Button>\n    <Button palette=\"danger\" style=\"solid\" onClick={confirm}>Delete account</Button>\n  </div>\n</div>",
+      "code": "<div role=\"dialog\" aria-modal=\"true\">\n  <h2>Delete account?</h2>\n  <p>This action cannot be undone.</p>\n  <div className=\"dialog-footer\">\n    <Button palette=\"neutral\" variant=\"subtle\">Cancel</Button>\n    <Button palette=\"danger\" variant=\"solid\" onClick={confirm}>Delete account</Button>\n  </div>\n</div>",
       "note": "Note what is NOT in the code: no custom Button reimplementation, no raw <button> tags, no inline color styles, no hand-rolled hover handlers. The system handles variants, hover, focus rings, and disabled treatment."
     }
   },
@@ -941,7 +941,6 @@
         "default"
       ],
       "tokens": {
-        "style": "subtle",
         "palette_mapping": {
           "neutral": "color.palette.neutral",
           "info": "color.palette.primary",
@@ -1055,7 +1054,7 @@
             "danger": "Irreversible or destructive actions. Use for: delete, remove, cancel-subscription, reset. Pair with confirmation when consequence is severe."
           }
         },
-        "style": {
+        "variant": {
           "type": "enum",
           "values": [
             "solid",
@@ -1129,7 +1128,7 @@
           "primary": "color.palette.primary",
           "danger": "color.palette.danger"
         },
-        "style_slots": {
+        "variant_slots": {
           "solid": {
             "bg": "{palette}.base",
             "bg_hover": "{palette}.base-hover",
@@ -1219,43 +1218,43 @@
       "examples": [
         {
           "name": "Primary submit",
-          "code": "<Button palette=\"primary\" style=\"solid\" type=\"submit\">Save changes</Button>",
+          "code": "<Button palette=\"primary\" variant=\"solid\" type=\"submit\">Save changes</Button>",
           "context": "Form footer"
         },
         {
           "name": "Destructive with confirmation",
-          "code": "<Button palette=\"danger\" style=\"solid\" onClick={confirmDelete}>Delete account</Button>",
+          "code": "<Button palette=\"danger\" variant=\"solid\" onClick={confirmDelete}>Delete account</Button>",
           "context": "Settings page, paired with confirmation dialog"
         },
         {
           "name": "Cancel in dialog",
-          "code": "<Button palette=\"neutral\" style=\"subtle\">Cancel</Button>",
+          "code": "<Button palette=\"neutral\" variant=\"subtle\">Cancel</Button>",
           "context": "Dialog footer alongside primary action"
         },
         {
           "name": "Toolbar action",
-          "code": "<Button palette=\"neutral\" style=\"ghost\" size=\"sm\" iconStart={<EditIcon />}>Edit</Button>",
+          "code": "<Button palette=\"neutral\" variant=\"ghost\" size=\"sm\" iconStart={<EditIcon />}>Edit</Button>",
           "context": "Dense toolbar, multiple actions"
         },
         {
           "name": "Loading state",
-          "code": "<Button palette=\"primary\" style=\"solid\" loading>Saving</Button>",
+          "code": "<Button palette=\"primary\" variant=\"solid\" loading>Saving</Button>",
           "context": "After form submit, before response"
         },
         {
           "name": "Icon-end for dropdown",
-          "code": "<Button palette=\"neutral\" style=\"subtle\" iconEnd={<ChevronDownIcon />}>Options</Button>",
+          "code": "<Button palette=\"neutral\" variant=\"subtle\" iconEnd={<ChevronDownIcon />}>Options</Button>",
           "context": "Trigger for menu or popover"
         }
       ],
       "antiPatterns": [
         {
-          "bad": "<Button palette=\"primary\" style=\"solid\">Cancel</Button>",
-          "good": "<Button palette=\"neutral\" style=\"subtle\">Cancel</Button>",
+          "bad": "<Button palette=\"primary\" variant=\"solid\">Cancel</Button>",
+          "good": "<Button palette=\"neutral\" variant=\"subtle\">Cancel</Button>",
           "why": "Cancel is a low-emphasis action. Solid primary reserved for the canonical action of the view."
         },
         {
-          "bad": "<Button palette=\"danger\" style=\"solid\" onClick={() => navigate('/profile')}>View Profile</Button>",
+          "bad": "<Button palette=\"danger\" variant=\"solid\" onClick={() => navigate('/profile')}>View Profile</Button>",
           "good": "<Link href=\"/profile\">View Profile</Link>",
           "why": "Navigation belongs to Link. Buttons trigger actions. Destructive palette implies destructive action."
         },

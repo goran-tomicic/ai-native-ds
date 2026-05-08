@@ -47,7 +47,7 @@ async function main() {
   lines.push('For building UI with this system:')
   lines.push('- Read /components/{name}/{name}.llm.md for each component you need.')
   lines.push('- Each .llm.md is a complete contract: usage, props, rules, anti-patterns, examples.')
-  lines.push('- **Always import components as JSX. Never reimplement them or write raw HTML when a component exists.** If a Button is needed, use `<Button palette="..." style="..." />`. Do not write `<button>` and reproduce the styling manually.')
+  lines.push('- **Always import components as JSX. Never reimplement them or write raw HTML when a component exists.** If a Button is needed, use `<Button palette="..." variant="..." />`. Do not write `<button>` and reproduce the styling manually.')
   lines.push('')
   lines.push('For querying tokens or programmatic lookups:')
   lines.push('- /api/components.json — full system as one JSON, queryable')

@@ -175,11 +175,11 @@ No variation. No synonyms. No additions to the main scale without updating this 
 Components have two orthogonal axes:
 
 1. **Palette** — which semantic color family (`tone="success"`, `palette="primary"`)
-2. **Style** — which visual treatment (`style="solid"`, `variant="ghost"`)
+2. **Variant** — which visual treatment (`variant="solid"`, `variant="ghost"`)
 
 The style determines which palette slots get used:
 
-| Style     | Background                        | Foreground | Border |
+| Variant   | Background                        | Foreground | Border |
 | --------- | --------------------------------- | ---------- | ------ |
 | `solid`   | `base`                            | `contrast` | —      |
 | `subtle`  | `soft`                            | `bold`     | —      |
@@ -189,7 +189,7 @@ The style determines which palette slots get used:
 
 This is a convention, not enforced by code. Components can deviate with documented reason.
 
-**Example:** Badge is always effectively `subtle` style — `tone` prop picks the palette, no style axis. Badge's spec declares `"style": "subtle"` and `"slots": { "bg": "{palette}.soft", "fg": "{palette}.bold" }`.
+**Example:** Badge is always effectively `subtle` style — `tone` prop picks the palette, no style axis. Badge's spec declares `"variant": "subtle"` and `"slots": { "bg": "{palette}.soft", "fg": "{palette}.bold" }`.
 
 ### Disabled state — opacity, not tokens
 

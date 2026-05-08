@@ -18,7 +18,7 @@
         "danger":  "Irreversible or destructive actions. Use for: delete, remove, cancel-subscription, reset. Pair with confirmation when consequence is severe."
       }
     },
-    "style": {
+    "variant": {
       "type": "enum",
       "values": ["solid", "subtle", "ghost"],
       "default": "solid",
@@ -75,7 +75,7 @@
       "primary": "color.palette.primary",
       "danger":  "color.palette.danger"
     },
-    "style_slots": {
+    "variant_slots": {
       "solid": {
         "bg":         "{palette}.base",
         "bg_hover":   "{palette}.base-hover",
@@ -151,44 +151,44 @@
   "examples": [
     {
       "name": "Primary submit",
-      "code": "<Button palette=\"primary\" style=\"solid\" type=\"submit\">Save changes</Button>",
+      "code": "<Button palette=\"primary\" variant=\"solid\" type=\"submit\">Save changes</Button>",
       "context": "Form footer"
     },
     {
       "name": "Destructive with confirmation",
-      "code": "<Button palette=\"danger\" style=\"solid\" onClick={confirmDelete}>Delete account</Button>",
+      "code": "<Button palette=\"danger\" variant=\"solid\" onClick={confirmDelete}>Delete account</Button>",
       "context": "Settings page, paired with confirmation dialog"
     },
     {
       "name": "Cancel in dialog",
-      "code": "<Button palette=\"neutral\" style=\"subtle\">Cancel</Button>",
+      "code": "<Button palette=\"neutral\" variant=\"subtle\">Cancel</Button>",
       "context": "Dialog footer alongside primary action"
     },
     {
       "name": "Toolbar action",
-      "code": "<Button palette=\"neutral\" style=\"ghost\" size=\"sm\" iconStart={<EditIcon />}>Edit</Button>",
+      "code": "<Button palette=\"neutral\" variant=\"ghost\" size=\"sm\" iconStart={<EditIcon />}>Edit</Button>",
       "context": "Dense toolbar, multiple actions"
     },
     {
       "name": "Loading state",
-      "code": "<Button palette=\"primary\" style=\"solid\" loading>Saving</Button>",
+      "code": "<Button palette=\"primary\" variant=\"solid\" loading>Saving</Button>",
       "context": "After form submit, before response"
     },
     {
       "name": "Icon-end for dropdown",
-      "code": "<Button palette=\"neutral\" style=\"subtle\" iconEnd={<ChevronDownIcon />}>Options</Button>",
+      "code": "<Button palette=\"neutral\" variant=\"subtle\" iconEnd={<ChevronDownIcon />}>Options</Button>",
       "context": "Trigger for menu or popover"
     }
   ],
 
   "antiPatterns": [
     {
-      "bad":  "<Button palette=\"primary\" style=\"solid\">Cancel</Button>",
-      "good": "<Button palette=\"neutral\" style=\"subtle\">Cancel</Button>",
+      "bad":  "<Button palette=\"primary\" variant=\"solid\">Cancel</Button>",
+      "good": "<Button palette=\"neutral\" variant=\"subtle\">Cancel</Button>",
       "why":  "Cancel is a low-emphasis action. Solid primary reserved for the canonical action of the view."
     },
     {
-      "bad":  "<Button palette=\"danger\" style=\"solid\" onClick={() => navigate('/profile')}>View Profile</Button>",
+      "bad":  "<Button palette=\"danger\" variant=\"solid\" onClick={() => navigate('/profile')}>View Profile</Button>",
       "good": "<Link href=\"/profile\">View Profile</Link>",
       "why":  "Navigation belongs to Link. Buttons trigger actions. Destructive palette implies destructive action."
     },

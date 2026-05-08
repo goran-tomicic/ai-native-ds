@@ -19,7 +19,7 @@ const button = cva(
         primary: '',
         danger:  '',
       },
-      style: {
+      variant: {
         solid:  '',
         subtle: '',
         ghost:  '',
@@ -31,51 +31,51 @@ const button = cva(
       },
     },
     compoundVariants: [
-      // SOLID style — bg=base, hover=base-hover, active=base-active, fg=contrast
+      // SOLID variant — bg=base, hover=base-hover, active=base-active, fg=contrast
       {
-        style: 'solid', palette: 'neutral',
+        variant: 'solid', palette: 'neutral',
         class: 'bg-neutral-base hover:bg-neutral-base-hover active:bg-neutral-base-active text-neutral-contrast',
       },
       {
-        style: 'solid', palette: 'primary',
+        variant: 'solid', palette: 'primary',
         class: 'bg-primary-base hover:bg-primary-base-hover active:bg-primary-base-active text-primary-contrast',
       },
       {
-        style: 'solid', palette: 'danger',
+        variant: 'solid', palette: 'danger',
         class: 'bg-danger-base hover:bg-danger-base-hover active:bg-danger-base-active text-danger-contrast',
       },
 
-      // SUBTLE style — bg=soft, hover=soft-hover, active=soft-active, fg=bold
+      // SUBTLE variant — bg=soft, hover=soft-hover, active=soft-active, fg=bold
       {
-        style: 'subtle', palette: 'neutral',
+        variant: 'subtle', palette: 'neutral',
         class: 'bg-neutral-soft hover:bg-neutral-soft-hover active:bg-neutral-soft-active text-neutral-bold',
       },
       {
-        style: 'subtle', palette: 'primary',
+        variant: 'subtle', palette: 'primary',
         class: 'bg-primary-soft hover:bg-primary-soft-hover active:bg-primary-soft-active text-primary-bold',
       },
       {
-        style: 'subtle', palette: 'danger',
+        variant: 'subtle', palette: 'danger',
         class: 'bg-danger-soft hover:bg-danger-soft-hover active:bg-danger-soft-active text-danger-bold',
       },
 
-      // GHOST style — bg=transparent, hover=subtle, active=soft, fg=bold
+      // GHOST variant — bg=transparent, hover=subtle, active=soft, fg=bold
       {
-        style: 'ghost', palette: 'neutral',
+        variant: 'ghost', palette: 'neutral',
         class: 'bg-transparent hover:bg-neutral-subtle active:bg-neutral-soft text-neutral-bold',
       },
       {
-        style: 'ghost', palette: 'primary',
+        variant: 'ghost', palette: 'primary',
         class: 'bg-transparent hover:bg-primary-subtle active:bg-primary-soft text-primary-bold',
       },
       {
-        style: 'ghost', palette: 'danger',
+        variant: 'ghost', palette: 'danger',
         class: 'bg-transparent hover:bg-danger-subtle active:bg-danger-soft text-danger-bold',
       },
     ],
     defaultVariants: {
       palette: 'neutral',
-      style: 'solid',
+      variant: 'solid',
       size: 'md',
     }
   }
@@ -94,7 +94,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       palette,
-      style,
+      variant,
       size,
       loading = false,
       disabled,
@@ -115,7 +115,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         type={type}
         disabled={isDisabled}
         aria-busy={loading || undefined}
-        className={button({ palette, style, size, className })}
+        className={button({ palette, variant, size, className })}
         {...props}
       >
         {loading ? (

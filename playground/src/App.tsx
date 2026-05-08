@@ -21,7 +21,7 @@ export function App() {
         </div>
         <Button
           palette="neutral"
-          style="subtle"
+          variant="subtle"
           size="sm"
           onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
         >
@@ -32,29 +32,29 @@ export function App() {
       {/* BUTTON SECTIONS */}
 
       <section className="section">
-        <h2>Button — solid style</h2>
+        <h2>Button — solid variant</h2>
         <div className="row">
-          <Button palette="neutral" style="solid">Neutral</Button>
-          <Button palette="primary" style="solid">Primary</Button>
-          <Button palette="danger" style="solid">Danger</Button>
+          <Button palette="neutral" variant="solid">Neutral</Button>
+          <Button palette="primary" variant="solid">Primary</Button>
+          <Button palette="danger" variant="solid">Danger</Button>
         </div>
       </section>
 
       <section className="section">
-        <h2>Button — subtle style</h2>
+        <h2>Button — subtle variant</h2>
         <div className="row">
-          <Button palette="neutral" style="subtle">Neutral</Button>
-          <Button palette="primary" style="subtle">Primary</Button>
-          <Button palette="danger" style="subtle">Danger</Button>
+          <Button palette="neutral" variant="subtle">Neutral</Button>
+          <Button palette="primary" variant="subtle">Primary</Button>
+          <Button palette="danger" variant="subtle">Danger</Button>
         </div>
       </section>
 
       <section className="section">
-        <h2>Button — ghost style</h2>
+        <h2>Button — ghost variant</h2>
         <div className="row">
-          <Button palette="neutral" style="ghost">Neutral</Button>
-          <Button palette="primary" style="ghost">Primary</Button>
-          <Button palette="danger" style="ghost">Danger</Button>
+          <Button palette="neutral" variant="ghost">Neutral</Button>
+          <Button palette="primary" variant="ghost">Primary</Button>
+          <Button palette="danger" variant="ghost">Danger</Button>
         </div>
       </section>
 
@@ -88,12 +88,12 @@ export function App() {
       <section className="section">
         <h2>Realistic compositions</h2>
         <div className="row">
-          <Button palette="primary" style="solid" type="submit">Save changes</Button>
-          <Button palette="neutral" style="subtle">Cancel</Button>
+          <Button palette="primary" variant="solid" type="submit">Save changes</Button>
+          <Button palette="neutral" variant="subtle">Cancel</Button>
         </div>
         <div className="row" style={{ marginTop: 'var(--space-4)' }}>
-          <Button palette="danger" style="solid">Delete account</Button>
-          <Button palette="neutral" style="ghost">Keep account</Button>
+          <Button palette="danger" variant="solid">Delete account</Button>
+          <Button palette="neutral" variant="ghost">Keep account</Button>
         </div>
       </section>
 

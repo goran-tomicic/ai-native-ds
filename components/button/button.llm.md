@@ -5,7 +5,7 @@ Triggers an action. Use for: submitting forms, confirming dialogs, opening menus
 ## Usage
 
 ```jsx
-<Button palette="primary" style="solid" type="submit">Save changes</Button>
+<Button palette="primary" variant="solid" type="submit">Save changes</Button>
 ```
 
 ## Props
@@ -14,7 +14,7 @@ palette: neutral | primary | danger (default: "neutral")
   neutral — Default for most buttons. Use for: cancel, back, secondary actions, tertiary actions. The bulk of buttons in any UI should be neutral.
   primary — The single most important action in a view. Use for: submit, save, continue, confirm. Only one primary button per view, ever.
   danger — Irreversible or destructive actions. Use for: delete, remove, cancel-subscription, reset. Pair with confirmation when consequence is severe.
-style: solid | subtle | ghost (default: "solid")
+variant: solid | subtle | ghost (default: "solid")
   solid — Filled background using palette base color. Highest visual weight. Reserve for primary and destructive actions where emphasis matters.
   subtle — Soft tinted background. Medium visual weight. Default for neutral palette buttons. Use when the action is important but shouldn't dominate.
   ghost — Transparent background, palette-tinted text. Lowest visual weight. Use for tertiary actions, toolbar buttons, dense UIs.
@@ -29,12 +29,6 @@ children: ReactNode
 ## States
 
 default, hover, active, focus, disabled, loading
-
-## Style → palette slot mapping
-
-solid: bg={palette}.base, bg_hover={palette}.base-hover, bg_active={palette}.base-active, fg={palette}.contrast
-subtle: bg={palette}.soft, bg_hover={palette}.soft-hover, bg_active={palette}.soft-active, fg={palette}.bold
-ghost: bg=transparent, bg_hover={palette}.subtle, bg_active={palette}.soft, fg={palette}.bold
 
 ## Effects
 
@@ -57,11 +51,11 @@ transition: background-color 120ms ease, opacity 120ms ease
 
 ## Anti-patterns
 
-<Button palette="primary" style="solid">Cancel</Button>
-  → <Button palette="neutral" style="subtle">Cancel</Button>
+<Button palette="primary" variant="solid">Cancel</Button>
+  → <Button palette="neutral" variant="subtle">Cancel</Button>
   Cancel is a low-emphasis action. Solid primary reserved for the canonical action of the view.
 
-<Button palette="danger" style="solid" onClick={() => navigate('/profile')}>View Profile</Button>
+<Button palette="danger" variant="solid" onClick={() => navigate('/profile')}>View Profile</Button>
   → <Link href="/profile">View Profile</Link>
   Navigation belongs to Link. Buttons trigger actions. Destructive palette implies destructive action.
 
@@ -71,12 +65,12 @@ transition: background-color 120ms ease, opacity 120ms ease
 
 ## Examples
 
-Primary submit: <Button palette="primary" style="solid" type="submit">Save changes</Button>  // Form footer
-Destructive with confirmation: <Button palette="danger" style="solid" onClick={confirmDelete}>Delete account</Button>  // Settings page, paired with confirmation dialog
-Cancel in dialog: <Button palette="neutral" style="subtle">Cancel</Button>  // Dialog footer alongside primary action
-Toolbar action: <Button palette="neutral" style="ghost" size="sm" iconStart={<EditIcon />}>Edit</Button>  // Dense toolbar, multiple actions
-Loading state: <Button palette="primary" style="solid" loading>Saving</Button>  // After form submit, before response
-Icon-end for dropdown: <Button palette="neutral" style="subtle" iconEnd={<ChevronDownIcon />}>Options</Button>  // Trigger for menu or popover
+Primary submit: <Button palette="primary" variant="solid" type="submit">Save changes</Button>  // Form footer
+Destructive with confirmation: <Button palette="danger" variant="solid" onClick={confirmDelete}>Delete account</Button>  // Settings page, paired with confirmation dialog
+Cancel in dialog: <Button palette="neutral" variant="subtle">Cancel</Button>  // Dialog footer alongside primary action
+Toolbar action: <Button palette="neutral" variant="ghost" size="sm" iconStart={<EditIcon />}>Edit</Button>  // Dense toolbar, multiple actions
+Loading state: <Button palette="primary" variant="solid" loading>Saving</Button>  // After form submit, before response
+Icon-end for dropdown: <Button palette="neutral" variant="subtle" iconEnd={<ChevronDownIcon />}>Options</Button>  // Trigger for menu or popover
 
 ## Use instead when
 
