@@ -11,20 +11,22 @@
 
 Most design systems are documented for humans. But increasingly, the consumer is a program — an LLM generating UI, an agent composing components, a code assistant picking tokens.
 
-**Final thesis (after Day 18):** AI models preserve the abstraction level their design system presents, regardless of output target. The load-bearing layer isn't runtime alignment — it's abstraction preservation. Models prefer to consume the system at its canonical form and let renderers adapt.
+**Final thesis (after Day 18):** AI models preserve the abstraction level their design system presents, regardless of output target. The load-bearing layer isn't runtime alignment — it's abstraction preservation.
+
+**Generalization confirmed Day 21:** the thesis holds for compound APIs. Models correctly use dot-notation subcomponents (`Input.LeadingIcon`) the same way they use top-level components (`<Button>`).
 
 ---
 
 ## Project arc
 
-| Phase                           | Days           | Focus                                                 | Status                        |
-| ------------------------------- | -------------- | ----------------------------------------------------- | ----------------------------- |
-| Phase 1 — build                 | Days 1–10      | Build the system, run tests, refine thesis            | ✅ Done                       |
-| Phase 1.5 — refinement          | Days 11, 17–18 | Conventions cleanup, v4 experiment                    | ✅ Done                       |
-| Phase 2 — case study writing    | Writing chat   | Long-form post + case study page + video              | 🟡 In progress (writing chat) |
-| Phase 3 — finish original scope | Days 19–~38    | Build remaining components from original 10-week plan | 🟡 Started Day 19             |
+| Phase                           | Days           | Focus                                                 | Status         |
+| ------------------------------- | -------------- | ----------------------------------------------------- | -------------- |
+| Phase 1 — build                 | Days 1–10      | Build the system, run tests, refine thesis            | ✅ Done        |
+| Phase 1.5 — refinement          | Days 11, 17–18 | Conventions cleanup, v4 experiment                    | ✅ Done        |
+| Phase 2 — case study writing    | Writing chat   | Long-form post + case study page + video              | 🟡 In progress |
+| Phase 3 — finish original scope | Days 19+       | Build remaining components from original 10-week plan | 🟡 In progress |
 
-Goal of Phase 3: deliver the original 10-week plan honestly. Input → Card → Dialog (named in original Week 3), then 5 more from original Weeks 6–7, then pipeline hardening. ~33 hours of work spread across 4–6 weeks of weekly focused sessions. End state: 11 components, hardened pipeline, polished repo.
+Phase 3 progress: Input shipped (Days 19–21). Card, Dialog, plus 5 more from Weeks 6–7 still ahead. Pace tracking ~33 hours / 4–6 weeks.
 
 ---
 
@@ -38,8 +40,8 @@ Goal of Phase 3: deliver the original 10-week plan honestly. Input → Card → 
 - Disabled state via opacity + pointer-events, palette-agnostic
 - AI consumption surfaces: llms.txt, .llm.md, static API JSON, MCP server with two render tools
 - Single source of truth for conventions: `docs/system-meta.json`
-- **Component prop naming:** `palette` for intent, `variant` for visual treatment (renamed from `style` on Day 19)
-- Subcomponents as first-class entities: `Component.SubcomponentName` (started with Input.LeadingIcon)
+- Component prop naming: `palette` for intent, `variant` for visual treatment
+- Subcomponents as first-class entities: `Component.SubcomponentName` (validated working in AI consumption Day 21)
 - Public repo, commit history is part of the artifact
 
 ### Editorial (writing chat)
@@ -52,110 +54,114 @@ Goal of Phase 3: deliver the original 10-week plan honestly. Input → Card → 
 
 ## Daily log
 
-### Days 1–10 ✅ Build phase
+### Days 1–18 ✅ Build phase + thesis refinement
 
-Foundations, tokens, components, AI consumption layer, MCP server.
-
-### Day 11 ✅ Case study outline locked
-
-Eight-section structure, ~3000 words, four code snippets. Drafting moved to writing chat.
-
-### Day 17 ✅ Conventions cleanup
-
-Single source of truth at `docs/system-meta.json`. Both `llms.txt` and `components.json` now generated from this file.
-
-### Day 18 ✅ v4 experiment — refined the thesis
-
-Built `render_component_html` alongside `render_component_jsx`. Ran the same prompt in Claude Desktop and Claude Code with both tools available. Model chose JSX in both contexts. Refuted the simple runtime-alignment thesis; refined to abstraction preservation.
+Foundations, tokens, components (Badge, Button, Spinner), AI consumption layer, MCP server, four-iteration thesis arc culminating in abstraction-preservation finding.
 
 ### Day 19 ✅ Architectural cleanup + Input spec
 
-Three things shipped in one session:
+Renamed `style` → `variant` system-wide. Schema upgrade for subcomponents. Input spec v0.1.0 with Input.LeadingIcon / Input.TrailingIcon as first-class subcomponents.
 
-**1. Prop rename `style` → `variant`** (Day 19a)
+### Day 20 ✅ Input implementation
 
-After realizing the prop name `style` conflicts with React's native `style` prop on every HTML element, renamed across the system:
+Native `<input>` styled via cva (variant × state × size matrix). Compound subcomponents via children inspection (displayName-based). Dynamic padding adjustment for icon presence. forwardRef, controlled + uncontrolled support. TypeScript-safe compound component pattern. Type-checked clean.
 
-- `button.spec.json`, `button.tsx`: prop renamed; cva config and compoundVariants updated
-- `badge.spec.json`: deleted the metadata `"style": "subtle"` field (architectural fact, not data)
-- `playground/src/App.tsx`, `playground/src/DeleteAccountDialog.tsx`: all `<Button>` usages updated
-- `system-meta.json`, `generate-llms-txt.ts`, `token-architecture.md`: terminology updated
-- AI consumption surfaces regenerated
-- Convention 7 (PROP NAMING disambiguation) removed from `system-meta.json` — no longer relevant
-- Conventions array goes 8 → 7
+### Day 21 ✅ Input playground + first compound component AI test
 
-`docs/demo-day/*.md` files preserved as historical record. The case study chat is being notified separately so it can recontextualize the Day 8 finding.
+**Goal:** Verify Input visually + run first AI consumption test on compound subcomponent pattern.
 
-**Engineering rationale:** aligns with industry convention (shadcn, Radix, MUI, Chakra, Mantine). Removes the React `style` prop clash. Removes one of the AI consumption layer's stated failure modes by adopting the convention models default to.
+**Playground integration:**
 
-**Case study impact:** the Day 8 finding "model used `variant` instead of `style`" now reframes as "we initially picked an unusual name; AI consumption testing surfaced the cost; we renamed in v3." Same underlying lesson about training-data inertia, cleaner outcome.
+- Added Input section to `playground/src/App.tsx`
+- All variant × state × size combinations rendering
+- Leading icon + trailing icon examples
+- All states verified: default, error (red border), success (green border), disabled (faded)
+- All variants distinct: outlined, filled, ghost
+- Dark mode pass-through via CSS variable inheritance
+- Visual confirmation: focus ring, error border, success border, disabled appearance, icon positioning all working
 
-**2. Schema upgrade for subcomponents** (Day 19b setup)
+**AI consumption test:**
 
-`schemas/component.schema.json` extended with optional `subcomponents` field. Each subcomponent has its own name, description, props, rules, and examples — same shape as the parent component's contract, scoped one level deeper. Backward-compatible: existing specs without subcomponents validate as before.
+Fresh Claude.ai conversation. Pasted only `components/input/input.llm.md` (no other context). Prompt:
 
-Architectural significance: this establishes the _Component.SubcomponentName_ pattern as a first-class system convention. Card, Dialog, Tabs, FormField will all use it.
+> Build a search bar with a magnifying-glass leading icon and a clear button trailing icon (the clear button should clear the input value). Use only the Input component spec below.
 
-**3. Input spec v0.1.0** (Day 19b)
+**Result: clean pass.** Model output:
 
-`components/input/input.spec.json` shipped:
+```jsx
+<Input
+  variant="filled"
+  placeholder="Search..."
+  value={value}
+  onChange={(e) => setValue(e.target.value)}
+>
+  <Input.LeadingIcon>
+    <SearchIcon />
+  </Input.LeadingIcon>
+  {value && (
+    <Input.TrailingIcon interactive>
+      <button onClick={() => setValue("")} aria-label="Clear">
+        <XIcon />
+      </button>
+    </Input.TrailingIcon>
+  )}
+</Input>
+```
 
-- Text-only at v0.1 (other input types deferred)
-- Two prop axes: `state` (default/error/success) for validation, `variant` (outlined/filled/ghost) for visual treatment
-- Three sizes (sm/md/lg)
-- Subcomponents: `Input.LeadingIcon`, `Input.TrailingIcon`
-- No label/helper/error props — composes externally with FormField (Day 21+)
-- Full a11y, composition rules, anti-patterns, examples
+**What the model got right:**
 
-`scripts/generate-llm-docs.ts` updated to emit structured `## Subcomponents` section in `.llm.md` output. AI consumption surfaces regenerated.
+- Used `Input.LeadingIcon` and `Input.TrailingIcon` as dot-notation subcomponents (the new pattern from Day 19)
+- Picked `variant="filled"` for a search bar (cited spec's recommendation)
+- Used `interactive` prop on trailing icon (spec required it for clickable elements)
+- Added `aria-label="Clear"` (spec required for interactive trailing elements)
+- Added conditional rendering on the clear button (`{value && ...}`) — not in the spec, but good UX the model added from training-data conventions
+- Recognized leading icon should not be interactive (spec rule against using LeadingIcon as control)
+- Cited 5 specific spec rules in reasoning paragraph
 
-**Day 19 artifacts:**
+**What this validates:**
 
-- Renamed `style` → `variant` system-wide
-- `schemas/component.schema.json` v2 with subcomponents support
-- `components/input/input.spec.json` v0.1.0
-- `scripts/generate-llm-docs.ts` updated for subcomponents
-- 3 commits pushed (rename, convention 7 removal, Input + schema)
+1. The structured spec format works for compound APIs. The `subcomponents` array added to the schema on Day 19 communicates the API clearly enough that models use it correctly without inventing alternative patterns (props, custom positioning, etc.)
+
+2. The pattern generalizes — Card.Header, Dialog.Footer, Tabs.List will likely work the same way. Day 19's schema upgrade was load-bearing for the next 5+ components.
+
+3. Abstraction preservation thesis (Day 18) extends to compound APIs. Models treat `Input.LeadingIcon` as a callable abstraction the same way they treat `<Button>` — they don't degrade compound APIs to flatter approximations even when the surface is more complex.
+
+4. Architectural consistency held: no regression to `<Input style="filled" />` (the rename from Day 19 propagated cleanly into AI consumption).
+
+**Case study significance:** supporting data point for the post's thesis. Not a five-iteration arc moment, but evidence the thesis scales to compound APIs, which is exactly the kind of validation Section 8 (What's next) or Section 7 (What this means) could use. Handoff sent to writing chat.
+
+**Artifacts:**
+
+- Updated `playground/src/App.tsx` with Input section
+- AI consumption test result documented
+- Handoff to writing chat with Day 21 finding
 
 ---
 
-### Day 20 🟡 Planned — Input implementation
+### Day 22 🟡 Planned — Card component spec
 
-**Goal:** Build the Input component matching its spec. Subcomponents (Input.LeadingIcon, Input.TrailingIcon) ship in the same day.
+**Goal:** Card spec. Following the Button-style two-day cadence (spec, then implementation).
 
-**Three pieces:**
+**Quick scoping likely:**
 
-1. **Input component** (`components/input/input.tsx`)
-   - cva config: state × variant × size matrix
-   - Subcomponents exported as `Input.LeadingIcon`, `Input.TrailingIcon` (compound component pattern)
-   - State coverage: focus, hover, disabled, readonly, error, success
-   - Composes with FormField via children/parent contract
-   - Estimated ~120-150 lines
+- Variants (flat / outlined / raised) for visual elevation
+- Padding scale (sm / md / lg)
+- Composition slots: `Card.Header`, `Card.Body`, `Card.Footer`, `Card.Actions`
+- This is the second component using subcomponents — Day 19's schema upgrade pays off again
 
-2. **Playground updates**
-   - All variant × state combinations rendered
-   - Examples with leading/trailing icons
-   - Both modes (light + dark)
-   - Real interaction: focus state, error state demo
-
-3. **AI consumption test (optional, ~15 min)**
-   - Ask a fresh Claude.ai conversation to use Input correctly
-   - Particularly: does it use `Input.LeadingIcon` correctly, or invent something?
-   - First test of subcomponent consumption — case study material if interesting
-
-**Time estimate:** 1.5–2 hr.
+**Time estimate:** ~45-60 min for spec, Day 23 for implementation.
 
 ---
 
 ## Open questions / parking lot
 
-- **FormField component:** referenced extensively in Input spec but not built. Day 21 candidate.
-- **Multi-framework consumption (Vue, Svelte):** still parked. Future experiment.
+- **FormField component:** referenced extensively in Input spec but not built. Day 21+ candidate.
+- **Multi-framework consumption (Vue, Svelte):** still parked.
 - **Scale test:** still parked.
 - **Other AI editors:** Cursor, Aider, Copilot. Unverified.
-- **Code cleanup:** dead files from earlier iterations. Diagnostic commands ready.
+- **Code cleanup:** dead files from earlier iterations.
 - **Per-palette focus rings:** still deferred.
-- **Outline button variant:** still deferred (note: this is "outline" the _visual variant_, not the prop name — the prop name is now `variant`, not `style`).
+- **Outline button variant:** still deferred.
 - **Bidirectionality (code↔Figma):** parked as Phase 4 if it ever happens.
 
 ---
@@ -170,14 +176,13 @@ Architectural significance: this establishes the _Component.SubcomponentName_ pa
 - **Palette** — named color treatment
 - **Common** — UI infrastructure tokens
 - **Mode** — light or dark theme
-- **Variant (component-level)** — visual treatment a component supports (renamed from `style` on Day 19)
+- **Variant (component-level)** — visual treatment a component supports
 - **State modifier** — token suffix (`-hover`, `-active`)
-- **Subcomponent** — component accessed via dot notation (`Input.LeadingIcon`); first-class system entity from Day 19 onward
+- **Subcomponent** — component accessed via dot notation (`Input.LeadingIcon`); first-class system entity from Day 19 onward; AI consumption validated Day 21
 - **`.llm.md`** — per-component AI-optimized documentation
 - **Static API** — `public/api/components.json`
-- **Runtime alignment** — earlier thesis; refined by Day 18
 - **Abstraction preservation** — current thesis: AI consumption is governed by the system's canonical abstraction level
 
 ---
 
-_Last updated: end of Day 19. Phase 3 underway. Next session: Input implementation (Day 20)._
+_Last updated: end of Day 21. Input fully shipped. Next: Card spec (Day 22)._

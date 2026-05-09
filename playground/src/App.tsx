@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Badge } from '../../components/badge/badge'
 import { Button } from '../../components/button/button'
+import { Input } from '../../components/input/input'
 
 export function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
@@ -109,6 +110,47 @@ export function App() {
           <Badge tone="danger">Failed</Badge>
         </div>
       </section>
+
+      <section className="section">
+        <h2>Input — variants</h2>
+        <div className="row" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+          <Input variant="outlined" placeholder="Outlined" />
+          <Input variant="filled" placeholder="Filled" />
+          <Input variant="ghost" placeholder="Ghost" />
+        </div>
+      </section>
+
+      <section className="section">
+        <h2>Input — states</h2>
+        <div className="row" style={{ flexDirection: 'column' }}>
+          <Input state="default" placeholder="Default state" />
+          <Input state="error" defaultValue="invalid@" />
+          <Input state="success" defaultValue="user@example.com" />
+          <Input disabled placeholder="Disabled" />
+        </div>
+      </section>
+
+      <section className="section">
+        <h2>Input — sizes</h2>
+        <div className="row" style={{ flexDirection: 'column' }}>
+          <Input size="sm" placeholder="Small" />
+          <Input size="md" placeholder="Medium" />
+          <Input size="lg" placeholder="Large" />
+        </div>
+      </section>
+
+      <section className="section">
+        <h2>Input — with icons</h2>
+        <div className="row" style={{ flexDirection: 'column' }}>
+          <Input variant="filled" placeholder="Search...">
+            <Input.LeadingIcon>🔍</Input.LeadingIcon>
+          </Input>
+          <Input defaultValue="hello@example.com" state="success">
+            <Input.TrailingIcon>✓</Input.TrailingIcon>
+          </Input>
+        </div>
+      </section>
+
     </div>
   )
 }
