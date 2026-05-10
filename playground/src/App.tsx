@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Badge } from '../../components/badge/badge'
 import { Button } from '../../components/button/button'
 import { Input } from '../../components/input/input'
+import { Card } from '../../components/card/card'
 
 export function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
@@ -148,6 +149,71 @@ export function App() {
           <Input defaultValue="hello@example.com" state="success">
             <Input.TrailingIcon>✓</Input.TrailingIcon>
           </Input>
+        </div>
+      </section>
+
+      <section className="section">
+        <h2>Card — variants</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: 400 }}>
+          <Card variant="flat">
+            <Card.Header><h3>Flat card</h3></Card.Header>
+            <Card.Body><p>No border, no shadow. Use for cards within cards or sections that need grouping but not visual separation.</p></Card.Body>
+          </Card>
+          <Card variant="outlined">
+            <Card.Header><h3>Outlined card</h3></Card.Header>
+            <Card.Body><p>Subtle border, no shadow. The default — works in most contexts.</p></Card.Body>
+          </Card>
+          <Card variant="raised">
+            <Card.Header><h3>Raised card</h3></Card.Header>
+            <Card.Body><p>Border + shadow. Use when the card needs to feel above the surrounding content.</p></Card.Body>
+          </Card>
+        </div>
+      </section>
+
+      <section className="section">
+        <h2>Card — paddings</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: 400 }}>
+          <Card padding="sm">
+            <Card.Body><p>Small padding — compact cards in dense lists or sidebars.</p></Card.Body>
+          </Card>
+          <Card padding="md">
+            <Card.Body><p>Medium padding — comfortable default for most contexts.</p></Card.Body>
+          </Card>
+          <Card padding="lg">
+            <Card.Body><p>Large padding — generous spacing for hero or marketing cards.</p></Card.Body>
+          </Card>
+        </div>
+      </section>
+
+      <section className="section">
+        <h2>Card — full composition</h2>
+        <div style={{ maxWidth: 480 }}>
+          <Card variant="outlined">
+            <Card.Header>
+              <h3>Project status</h3>
+              <Badge tone="success">Active</Badge>
+            </Card.Header>
+            <Card.Body>
+              <p>Last deploy: 2 hours ago. Three pending changes from the team are ready for review.</p>
+            </Card.Body>
+            <Card.Footer>
+              <Button palette="neutral" variant="subtle">Skip</Button>
+              <Button palette="primary" variant="solid">Review changes</Button>
+            </Card.Footer>
+          </Card>
+        </div>
+      </section>
+
+      <section className="section">
+        <h2>Card — semantic 'as' prop</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: 480 }}>
+          <Card as="article" variant="outlined">
+            <Card.Header><h3>Renders as &lt;article&gt;</h3></Card.Header>
+            <Card.Body><p>Used for self-contained content like blog posts, news items, or feed items.</p></Card.Body>
+          </Card>
+          <Card as="aside" variant="flat" padding="sm">
+            <Card.Body><p>This Card renders as &lt;aside&gt; — useful for related-but-tangential content.</p></Card.Body>
+          </Card>
         </div>
       </section>
 
