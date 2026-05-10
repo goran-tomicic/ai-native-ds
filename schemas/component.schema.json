@@ -56,9 +56,8 @@
     },
     "accessibility": {
       "type": "object",
-      "required": ["role", "requirements"],
       "properties": {
-        "role": { "type": "string" },
+        "role": { "type": "string", "description": "ARIA role if the component has an inherent role. Omit for structurally neutral components like Card." },
         "keyboard": { "type": "array", "items": { "type": "string" } },
         "requirements": { "type": "array", "items": { "type": "string" } },
         "contrast": { "type": "string" }

@@ -26,7 +26,7 @@ Most design systems are documented for humans. But increasingly, the consumer is
 | Phase 2 — case study writing    | Writing chat   | Long-form post + case study page + video              | 🟡 In progress |
 | Phase 3 — finish original scope | Days 19+       | Build remaining components from original 10-week plan | 🟡 In progress |
 
-Phase 3 progress: Input shipped (Days 19–21). Card, Dialog, plus 5 more from Weeks 6–7 still ahead. Pace tracking ~33 hours / 4–6 weeks.
+Phase 3 progress: Input shipped (Days 19–21), Card spec shipped (Day 22). Card implementation + 5 more components + pipeline hardening still ahead. Pace tracking ~33 hours / 4–6 weeks.
 
 ---
 
@@ -42,6 +42,8 @@ Phase 3 progress: Input shipped (Days 19–21). Card, Dialog, plus 5 more from W
 - Single source of truth for conventions: `docs/system-meta.json`
 - Component prop naming: `palette` for intent, `variant` for visual treatment
 - Subcomponents as first-class entities: `Component.SubcomponentName` (validated working in AI consumption Day 21)
+- Shadow tokens as primitives in `tokens/core.tokens.json` (sm/md/lg, single-mode at v0.1)
+- Component schema does not require `accessibility.role` (Card forced this relaxation — structurally neutral components have no inherent role)
 - Public repo, commit history is part of the artifact
 
 ### Editorial (writing chat)
@@ -60,109 +62,91 @@ Foundations, tokens, components (Badge, Button, Spinner), AI consumption layer, 
 
 ### Day 19 ✅ Architectural cleanup + Input spec
 
-Renamed `style` → `variant` system-wide. Schema upgrade for subcomponents. Input spec v0.1.0 with Input.LeadingIcon / Input.TrailingIcon as first-class subcomponents.
+Renamed `style` → `variant` system-wide. Schema upgrade for subcomponents. Input spec v0.1.0 with Input.LeadingIcon / Input.TrailingIcon.
 
 ### Day 20 ✅ Input implementation
 
-Native `<input>` styled via cva (variant × state × size matrix). Compound subcomponents via children inspection (displayName-based). Dynamic padding adjustment for icon presence. forwardRef, controlled + uncontrolled support. TypeScript-safe compound component pattern. Type-checked clean.
+Native `<input>` styled via cva (variant × state × size matrix). Compound subcomponents via children inspection (displayName-based). Dynamic padding adjustment for icon presence. forwardRef, controlled + uncontrolled. Type-checked clean.
 
 ### Day 21 ✅ Input playground + first compound component AI test
 
-**Goal:** Verify Input visually + run first AI consumption test on compound subcomponent pattern.
+All variants × states × sizes rendering. AI test passed cleanly: model used Input.LeadingIcon and Input.TrailingIcon as dot-notation subcomponents correctly. Thesis generalizes to compound APIs.
 
-**Playground integration:**
+### Day 22 ✅ Card spec + shadow tokens
 
-- Added Input section to `playground/src/App.tsx`
-- All variant × state × size combinations rendering
-- Leading icon + trailing icon examples
-- All states verified: default, error (red border), success (green border), disabled (faded)
-- All variants distinct: outlined, filled, ghost
-- Dark mode pass-through via CSS variable inheritance
-- Visual confirmation: focus ring, error border, success border, disabled appearance, icon positioning all working
+**What shipped:**
 
-**AI consumption test:**
+1. **Shadow primitive tokens** in `tokens/core.tokens.json`:
+   - `shadow.sm` — subtle floating elements
+   - `shadow.md` — raised cards (Card uses this)
+   - `shadow.lg` — modals, popovers (Dialog will use this)
+   - DTCG-formatted, single-mode at v0.1 (dark-mode-aware shadows deferred)
 
-Fresh Claude.ai conversation. Pasted only `components/input/input.llm.md` (no other context). Prompt:
+2. **Schema relaxation:** `accessibility.role` is now optional. Original schema required it because every component up to Day 21 had an inherent ARIA role (button, textbox, status). Card is structurally neutral — its accessibility comes from content within, not the container. Card surfaced the schema's overgeneralization. Relaxing is the right fix; the alternative (forcing `role="region"` on every Card) would pollute the accessibility tree.
 
-> Build a search bar with a magnifying-glass leading icon and a clear button trailing icon (the clear button should clear the input value). Use only the Input component spec below.
+3. **Card spec v0.1.0** (`components/card/card.spec.json`):
+   - 3 variants: `flat` / `outlined` / `raised`
+   - 3 subcomponents: `Card.Header`, `Card.Body`, `Card.Footer`
+   - Uniform padding scale (sm/md/lg) on Card itself
+   - Structurally neutral — no palette/tone (intent carried by content within)
+   - `as` prop for semantic HTML (article, section, aside)
+   - Comprehensive rules, examples, anti-patterns
 
-**Result: clean pass.** Model output:
+4. **Figma effect styles** added manually:
+   - `shadow/sm`, `shadow/md`, `shadow/lg` as Figma effect styles
+   - Mirror code-side primitive values
+   - **Manual sync** — see "Bidirectional Figma sync" parking-lot item
 
-```jsx
-<Input
-  variant="filled"
-  placeholder="Search..."
-  value={value}
-  onChange={(e) => setValue(e.target.value)}
->
-  <Input.LeadingIcon>
-    <SearchIcon />
-  </Input.LeadingIcon>
-  {value && (
-    <Input.TrailingIcon interactive>
-      <button onClick={() => setValue("")} aria-label="Clear">
-        <XIcon />
-      </button>
-    </Input.TrailingIcon>
-  )}
-</Input>
-```
-
-**What the model got right:**
-
-- Used `Input.LeadingIcon` and `Input.TrailingIcon` as dot-notation subcomponents (the new pattern from Day 19)
-- Picked `variant="filled"` for a search bar (cited spec's recommendation)
-- Used `interactive` prop on trailing icon (spec required it for clickable elements)
-- Added `aria-label="Clear"` (spec required for interactive trailing elements)
-- Added conditional rendering on the clear button (`{value && ...}`) — not in the spec, but good UX the model added from training-data conventions
-- Recognized leading icon should not be interactive (spec rule against using LeadingIcon as control)
-- Cited 5 specific spec rules in reasoning paragraph
-
-**What this validates:**
-
-1. The structured spec format works for compound APIs. The `subcomponents` array added to the schema on Day 19 communicates the API clearly enough that models use it correctly without inventing alternative patterns (props, custom positioning, etc.)
-
-2. The pattern generalizes — Card.Header, Dialog.Footer, Tabs.List will likely work the same way. Day 19's schema upgrade was load-bearing for the next 5+ components.
-
-3. Abstraction preservation thesis (Day 18) extends to compound APIs. Models treat `Input.LeadingIcon` as a callable abstraction the same way they treat `<Button>` — they don't degrade compound APIs to flatter approximations even when the surface is more complex.
-
-4. Architectural consistency held: no regression to `<Input style="filled" />` (the rename from Day 19 propagated cleanly into AI consumption).
-
-**Case study significance:** supporting data point for the post's thesis. Not a five-iteration arc moment, but evidence the thesis scales to compound APIs, which is exactly the kind of validation Section 8 (What's next) or Section 7 (What this means) could use. Handoff sent to writing chat.
+**Architectural significance:** Card is the second component using the subcomponents pattern. Day 19's schema upgrade pays off again. Pattern proven for Input (Day 20–21), now ready to scale across Card (Day 22), Dialog (Day 24+), Tabs, FormField. The schema relaxation also matters: it removes a hidden constraint that would have blocked container components.
 
 **Artifacts:**
 
-- Updated `playground/src/App.tsx` with Input section
-- AI consumption test result documented
-- Handoff to writing chat with Day 21 finding
+- `tokens/core.tokens.json` — shadow scale added
+- `schemas/component.schema.json` — accessibility.role optional
+- `components/card/card.spec.json` v0.1.0
+- `components/card/card.llm.md` regenerated
+- `public/api/components.json` regenerated
+- `llms.txt` regenerated (Card listed)
+- Figma file — 3 effect styles added manually
 
 ---
 
-### Day 22 🟡 Planned — Card component spec
+### Day 23 🟡 Planned — Card implementation
 
-**Goal:** Card spec. Following the Button-style two-day cadence (spec, then implementation).
+**Goal:** Build Card matching its spec. Compound component pattern — same approach as Input (Day 20).
 
-**Quick scoping likely:**
+**Three pieces:**
 
-- Variants (flat / outlined / raised) for visual elevation
-- Padding scale (sm / md / lg)
-- Composition slots: `Card.Header`, `Card.Body`, `Card.Footer`, `Card.Actions`
-- This is the second component using subcomponents — Day 19's schema upgrade pays off again
+1. **Card component** (`components/card/card.tsx`)
+   - cva config: variant × padding matrix
+   - Subcomponents exported as `Card.Header`, `Card.Body`, `Card.Footer` (compound component pattern, displayName-based discrimination)
+   - `as` prop forwarding (polymorphic)
+   - Estimated ~80–100 lines (simpler than Input — no children inspection complexity since Card just renders subcomponents in flow)
 
-**Time estimate:** ~45-60 min for spec, Day 23 for implementation.
+2. **Playground updates**
+   - All variants × paddings combinations
+   - Composition examples (Header + Body + Footer)
+   - Examples with content: cards holding text, cards holding form fields, cards with action footers
+
+3. **AI consumption test (optional)**
+   - Verify Card.Header / Body / Footer work in AI consumption like Input.LeadingIcon did Day 21
+   - Second compound component test — strengthens or surfaces limits of the thesis
+
+**Time estimate:** ~1–1.5 hr.
 
 ---
 
 ## Open questions / parking lot
 
-- **FormField component:** referenced extensively in Input spec but not built. Day 21+ candidate.
+- **🆕 Bidirectional Figma sync (Phase 4 candidate):** Day 22 surfaced this concretely. Code-side tokens are authoritative, but Figma sync is currently one-way and manual. When shadows were added to code, they had to be manually mirrored to Figma effect styles. This works but doesn't scale. Two real solutions exist: (a) write code-to-Figma plugin that reads `tokens/core.tokens.json` and creates Figma effect styles + variables programmatically, or (b) maintain manual parity and accept drift risk. Connects to the bidirectionality question asked earlier — the harder version of the problem is "AI generates new components in both code and Figma simultaneously." Estimated effort if pursued: 1–2 days for one-way code→Figma plugin, ~1 week for full bidirectional sync. Worth flagging in case study Section 8 as a real limitation of the system as currently built.
+- **Dark-mode-aware shadows:** v0.1 ships single-mode shadows. Shadows in dark mode typically need higher alpha to remain visible. Could add semantic shadow tokens in `tokens/semantic.dark.tokens.json` later. Low priority — most DSes accept this gap.
+- **FormField component:** referenced extensively in Input spec but not built.
 - **Multi-framework consumption (Vue, Svelte):** still parked.
 - **Scale test:** still parked.
 - **Other AI editors:** Cursor, Aider, Copilot. Unverified.
 - **Code cleanup:** dead files from earlier iterations.
 - **Per-palette focus rings:** still deferred.
 - **Outline button variant:** still deferred.
-- **Bidirectionality (code↔Figma):** parked as Phase 4 if it ever happens.
 
 ---
 
@@ -178,11 +162,12 @@ Fresh Claude.ai conversation. Pasted only `components/input/input.llm.md` (no ot
 - **Mode** — light or dark theme
 - **Variant (component-level)** — visual treatment a component supports
 - **State modifier** — token suffix (`-hover`, `-active`)
-- **Subcomponent** — component accessed via dot notation (`Input.LeadingIcon`); first-class system entity from Day 19 onward; AI consumption validated Day 21
+- **Subcomponent** — component accessed via dot notation (`Input.LeadingIcon`); first-class system entity
+- **Effect style (Figma)** — Figma's term for a styled effect like a drop shadow. Distinct from Figma Variables, which currently don't support shadows. This is why shadow tokens require manual mirroring.
 - **`.llm.md`** — per-component AI-optimized documentation
 - **Static API** — `public/api/components.json`
 - **Abstraction preservation** — current thesis: AI consumption is governed by the system's canonical abstraction level
 
 ---
 
-_Last updated: end of Day 21. Input fully shipped. Next: Card spec (Day 22)._
+_Last updated: end of Day 22. Card spec + shadow tokens shipped, schema relaxed for structurally-neutral components, Figma effect styles mirrored manually. Next: Card implementation (Day 23)._
