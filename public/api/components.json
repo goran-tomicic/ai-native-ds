@@ -1,7 +1,7 @@
 {
   "$schema": "https://github.com/goran-tomicic/ai-native-ds/blob/main/schemas/component.schema.json",
   "version": "0.1.0",
-  "generatedAt": "2026-05-08T20:39:23.046Z",
+  "generatedAt": "2026-05-10T15:27:20.956Z",
   "overview": {
     "name": "ai-native-ds",
     "description": "Design system built for AI agents as first-class consumers.",
@@ -1280,6 +1280,284 @@
           {
             "component": "MenuButton",
             "when": "trigger for a menu — has its own composition"
+          }
+        ]
+      }
+    },
+    "card": {
+      "$schema": "../../schemas/component.schema.json",
+      "name": "Card",
+      "version": "0.1.0",
+      "status": "experimental",
+      "category": "container",
+      "description": "Container for grouped content. Composes with Card.Header, Card.Body, Card.Footer subcomponents to create structured layouts. Card is structurally neutral — the content within carries intent (use Badge, callout patterns, etc. for emphasis). The variant prop controls visual elevation; the padding prop sets uniform rhythm across all subcomponents.",
+      "props": {
+        "variant": {
+          "type": "enum",
+          "values": [
+            "flat",
+            "outlined",
+            "raised"
+          ],
+          "default": "outlined",
+          "description": "Visual elevation treatment.",
+          "guidance": {
+            "flat": "No border, no shadow. Use for cards within cards, or sections that need grouping but not visual separation.",
+            "outlined": "Subtle border, no shadow. The default — works in most contexts.",
+            "raised": "Border + shadow. Use when the card needs to feel above the surrounding content (hover-to-elevate patterns, floating action panels, summary cards on a feed)."
+          }
+        },
+        "padding": {
+          "type": "enum",
+          "values": [
+            "sm",
+            "md",
+            "lg"
+          ],
+          "default": "md",
+          "description": "Uniform padding scale applied to Card.Header, Card.Body, and Card.Footer.",
+          "guidance": {
+            "sm": "Compact. Good for cards in dense lists or sidebars.",
+            "md": "Default. Comfortable for most form/content contexts.",
+            "lg": "Generous. Hero cards, marketing surfaces, primary feature cards."
+          }
+        },
+        "as": {
+          "type": "string",
+          "optional": true,
+          "default": "div",
+          "description": "Render as a different element (e.g. 'article', 'section', 'aside'). Useful for semantic HTML — a card representing a blog post should be 'article', a card representing related content should be 'aside'."
+        }
+      },
+      "states": [
+        "default",
+        "hover"
+      ],
+      "tokens": {
+        "variant_slots": {
+          "flat": {
+            "bg": "color.common.surface.base",
+            "border": "transparent",
+            "shadow": "none"
+          },
+          "outlined": {
+            "bg": "color.common.surface.base",
+            "border": "color.common.border.muted",
+            "shadow": "none"
+          },
+          "raised": {
+            "bg": "color.common.surface.base",
+            "border": "color.common.border.muted",
+            "shadow": "shadow.md"
+          }
+        },
+        "shared": {
+          "radius": "radius.lg",
+          "padding.sm": "space.3",
+          "padding.md": "space.5",
+          "padding.lg": "space.7",
+          "subcomponent_gap": "space.3"
+        },
+        "effects": {
+          "transition": "border-color 120ms ease, box-shadow 120ms ease"
+        }
+      },
+      "accessibility": {
+        "requirements": [
+          "Use the 'as' prop to provide semantic meaning where appropriate (article, section, aside) — Card defaults to div which has no implicit semantics",
+          "If the entire card is interactive (clickable card), wrap a single Card in a link or button rather than putting interactive elements inside that compete for the click target",
+          "Card.Header should typically contain a heading element — use h2/h3/h4 inside Card.Header based on the page's heading hierarchy",
+          "Card itself does not get role='region' by default — apply only when the card is a discrete navigational landmark"
+        ]
+      },
+      "composition": {
+        "allowedChildren": [
+          "Card.Header",
+          "Card.Body",
+          "Card.Footer",
+          "any content"
+        ],
+        "forbiddenChildren": [],
+        "commonParents": [
+          "page",
+          "section",
+          "list",
+          "grid"
+        ],
+        "subcomponentOrdering": "Card.Header → Card.Body → Card.Footer is the canonical order. Body alone is acceptable. Skipping Body in favor of just Header + Footer is unusual and probably indicates the wrong component."
+      },
+      "subcomponents": [
+        {
+          "name": "Card.Header",
+          "description": "Top section of the card. Typically contains a heading, optionally with metadata or accessory content (badges, icons, dropdowns). Inherits Card's padding scale.",
+          "props": {
+            "children": {
+              "type": "ReactNode",
+              "description": "Heading element and any accessory content. Recommended: a heading (h2/h3/h4) plus optional Badge or icon."
+            }
+          },
+          "rules": {
+            "do": [
+              "Put a heading element here as the primary child",
+              "Combine heading with accessory elements (Badge, status indicator, dropdown trigger) using flex layout",
+              "Keep header content visually consistent — avoid mixing text-heavy descriptions here, those belong in Body"
+            ],
+            "dont": [
+              "Don't put long descriptions or paragraphs here — Body is for that",
+              "Don't put primary actions here — Footer is the conventional place for actions",
+              "Don't render Card.Header as the only child of Card — that's a Card without content; consider whether you actually need a card"
+            ]
+          },
+          "examples": [
+            {
+              "name": "Heading with badge",
+              "code": "<Card.Header>\n  <h3>Project status</h3>\n  <Badge tone=\"success\">Active</Badge>\n</Card.Header>",
+              "context": "Project summary card on a dashboard"
+            }
+          ]
+        },
+        {
+          "name": "Card.Body",
+          "description": "Primary content area. Holds the bulk of the card's information — descriptions, lists, embedded content, form fields. Inherits Card's padding scale.",
+          "props": {
+            "children": {
+              "type": "ReactNode",
+              "description": "Primary content. Can be any combination of text, form elements, lists, or embedded components."
+            }
+          },
+          "rules": {
+            "do": [
+              "Put the main content here — descriptions, data, form fields",
+              "Use semantic HTML inside (paragraphs, lists, sections) rather than nested divs",
+              "Body is the only required subcomponent if you're using subcomponents at all"
+            ],
+            "dont": [
+              "Don't repeat heading content here that belongs in Card.Header",
+              "Don't put primary actions here — those go in Footer",
+              "Don't introduce custom padding — Card's padding prop controls this"
+            ]
+          },
+          "examples": [
+            {
+              "name": "Text content",
+              "code": "<Card.Body>\n  <p>Last deploy: 2 hours ago. Three pending changes.</p>\n</Card.Body>",
+              "context": "Project status card body"
+            }
+          ]
+        },
+        {
+          "name": "Card.Footer",
+          "description": "Bottom section. Holds actions (buttons), metadata (timestamps, attribution), or both. Inherits Card's padding scale. Often visually separated from Body via a top border.",
+          "props": {
+            "children": {
+              "type": "ReactNode",
+              "description": "Actions, metadata, or both. Most commonly a row of buttons."
+            }
+          },
+          "rules": {
+            "do": [
+              "Use Footer for primary card actions (buttons)",
+              "Use Footer for low-emphasis metadata (timestamps, author bylines, status info)",
+              "When combining actions and metadata, layout them with metadata on the left and actions on the right (LTR)",
+              "If multiple buttons, follow the Button spec's primary-action-on-the-right rule"
+            ],
+            "dont": [
+              "Don't put more than one primary action in Footer — competing primaries violate the system's one-primary-per-view rule",
+              "Don't put descriptive content here — that belongs in Body",
+              "Don't omit Card.Footer just to save space — if there are actions, the Footer is the right place for them"
+            ]
+          },
+          "examples": [
+            {
+              "name": "Two-button footer",
+              "code": "<Card.Footer>\n  <Button palette=\"neutral\" variant=\"subtle\">Cancel</Button>\n  <Button palette=\"primary\" variant=\"solid\">Save</Button>\n</Card.Footer>",
+              "context": "Settings card with save/cancel actions"
+            },
+            {
+              "name": "Metadata + action",
+              "code": "<Card.Footer>\n  <span className=\"text-fg-muted text-sm\">Updated 2 hours ago</span>\n  <Button palette=\"primary\" variant=\"subtle\">View details</Button>\n</Card.Footer>",
+              "context": "Activity card on a feed"
+            }
+          ]
+        }
+      ],
+      "rules": {
+        "do": [
+          "Use Card to group related content that belongs together",
+          "Match variant to context: outlined for in-flow content, raised for floating/elevated content, flat for nested cards",
+          "Use semantic HTML via 'as' prop when the card represents a meaningful document part (article, aside, section)",
+          "Use subcomponents (Header/Body/Footer) for structured cards; raw children are fine for simple cards",
+          "Match Card padding to surrounding context: sm in dense lists, md as default, lg for hero or marketing cards"
+        ],
+        "dont": [
+          "Don't add palette tinting to Card itself — Card is structurally neutral. If you need to indicate intent, put a Badge or callout inside Card.Body.",
+          "Don't nest raised cards inside raised cards — the elevation hierarchy collapses visually. Use flat for inner cards.",
+          "Don't customize per-subcomponent padding — the uniform rhythm is intentional. Use sm/md/lg on Card itself.",
+          "Don't use Card as a generic styling utility — if you just need a styled box, that's a div. Card implies grouped content with semantic meaning."
+        ]
+      },
+      "examples": [
+        {
+          "name": "Simple outlined card",
+          "code": "<Card>\n  <Card.Header><h3>Title</h3></Card.Header>\n  <Card.Body><p>Content goes here.</p></Card.Body>\n</Card>",
+          "context": "Basic card on a content page"
+        },
+        {
+          "name": "Card with footer actions",
+          "code": "<Card>\n  <Card.Header><h3>Confirm changes</h3></Card.Header>\n  <Card.Body><p>Review before saving.</p></Card.Body>\n  <Card.Footer>\n    <Button palette=\"neutral\" variant=\"subtle\">Cancel</Button>\n    <Button palette=\"primary\" variant=\"solid\">Save</Button>\n  </Card.Footer>\n</Card>",
+          "context": "Inline confirmation pattern"
+        },
+        {
+          "name": "Raised hero card",
+          "code": "<Card variant=\"raised\" padding=\"lg\" as=\"section\">\n  <Card.Header><h2>Welcome back</h2></Card.Header>\n  <Card.Body><p>Here's what's new since your last visit.</p></Card.Body>\n</Card>",
+          "context": "Marketing or onboarding hero"
+        },
+        {
+          "name": "Compact card in a list",
+          "code": "<Card variant=\"outlined\" padding=\"sm\" as=\"article\">\n  <Card.Header><h4>Item title</h4><Badge tone=\"info\">New</Badge></Card.Header>\n  <Card.Body><p>Brief description.</p></Card.Body>\n</Card>",
+          "context": "Item in a feed or search results"
+        },
+        {
+          "name": "Card without subcomponents",
+          "code": "<Card>\n  <p>Quick standalone content. Subcomponents are optional.</p>\n</Card>",
+          "context": "Lightweight grouped content where structure isn't needed"
+        }
+      ],
+      "antiPatterns": [
+        {
+          "bad": "<Card variant=\"raised\"><Card variant=\"raised\">...</Card></Card>",
+          "good": "<Card variant=\"raised\"><Card variant=\"flat\">...</Card></Card>",
+          "why": "Nested raised cards collapse the elevation hierarchy — the inner shadow disappears against the outer shadow. Inner cards should be flat or outlined to preserve the parent's elevation."
+        },
+        {
+          "bad": "<Card style={{ backgroundColor: 'var(--color-palette-danger-subtle)' }}>...</Card>",
+          "good": "<Card><Card.Body><Badge tone=\"danger\">Error</Badge><p>Description of error</p></Card.Body></Card>",
+          "why": "Card is structurally neutral. To convey intent, put intent-bearing content (Badge, callouts) inside the card. Tinting the card itself is the wrong abstraction layer."
+        },
+        {
+          "bad": "<Card><Card.Footer><Button palette=\"primary\" variant=\"solid\">Save</Button><Button palette=\"primary\" variant=\"solid\">Submit</Button></Card.Footer></Card>",
+          "good": "<Card><Card.Footer><Button palette=\"neutral\" variant=\"subtle\">Cancel</Button><Button palette=\"primary\" variant=\"solid\">Save</Button></Card.Footer></Card>",
+          "why": "Two primary actions in the same Footer violate the system's one-primary-action-per-view rule. The user shouldn't have to decide which solid primary button to click."
+        },
+        {
+          "bad": "<Card padding=\"lg\"><Card.Header style={{ padding: '8px' }}>...</Card.Header></Card>",
+          "good": "<Card padding=\"sm\"><Card.Header>...</Card.Header></Card>",
+          "why": "Per-subcomponent padding overrides break Card's intentional uniform rhythm. If you need less padding, set Card's padding prop to 'sm'. If you need wildly different spacing across subcomponents, you may not actually want a Card."
+        }
+      ],
+      "related": {
+        "use_instead_when": [
+          {
+            "component": "Dialog",
+            "when": "the content needs to be modal or focus-trapping"
+          },
+          {
+            "component": "div",
+            "when": "you just need a styled box without grouped semantic meaning"
+          },
+          {
+            "component": "Section",
+            "when": "you need a major page region; Card is for smaller groupings within a region"
           }
         ]
       }
