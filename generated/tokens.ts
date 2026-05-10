@@ -136,3 +136,24 @@ export const Space4 = "16px";
 export const Space6 = "24px";
 export const Space8 = "32px";
 export const Space10 = "40px";
+export const ShadowSm = {
+  color: "#00000014",
+  offsetX: "0px",
+  offsetY: "1px",
+  blur: "2px",
+  spread: "0px",
+}; // Subtle shadow for slightly raised elements
+export const ShadowMd = {
+  color: "#00000022",
+  offsetX: "0px",
+  offsetY: "2px",
+  blur: "4px",
+  spread: "0px",
+}; // Default raised card shadow
+export const ShadowLg = {
+  color: "#00000033",
+  offsetX: "0px",
+  offsetY: "8px",
+  blur: "16px",
+  spread: "-4px",
+}; // Modal, popover, dialog shadows

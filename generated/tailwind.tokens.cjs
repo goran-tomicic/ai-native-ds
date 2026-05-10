@@ -137,4 +137,25 @@ module.exports = {
   Space6: "24px",
   Space8: "32px",
   Space10: "40px",
+  ShadowSm: {
+    color: "#00000014",
+    offsetX: "0px",
+    offsetY: "1px",
+    blur: "2px",
+    spread: "0px",
+  },
+  ShadowMd: {
+    color: "#00000022",
+    offsetX: "0px",
+    offsetY: "2px",
+    blur: "4px",
+    spread: "0px",
+  },
+  ShadowLg: {
+    color: "#00000033",
+    offsetX: "0px",
+    offsetY: "8px",
+    blur: "16px",
+    spread: "-4px",
+  },
 };

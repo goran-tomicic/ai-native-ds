@@ -136,3 +136,27 @@ export const Space4: string;
 export const Space6: string;
 export const Space8: string;
 export const Space10: string;
+/** Subtle shadow for slightly raised elements */
+export const ShadowSm: {
+  color: string;
+  offsetX: string;
+  offsetY: string;
+  blur: string;
+  spread: string;
+};
+/** Default raised card shadow */
+export const ShadowMd: {
+  color: string;
+  offsetX: string;
+  offsetY: string;
+  blur: string;
+  spread: string;
+};
+/** Modal, popover, dialog shadows */
+export const ShadowLg: {
+  color: string;
+  offsetX: string;
+  offsetY: string;
+  blur: string;
+  spread: string;
+};

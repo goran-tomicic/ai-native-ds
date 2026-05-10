@@ -17,12 +17,30 @@ import { writeFile, readFile } from 'node:fs/promises'
 const SHARED_PLATFORMS = (mode: 'light' | 'dark') => ({
   css: {
     transformGroup: 'css',
+    transforms: [
+      // Default css group transforms
+      'attribute/cti',
+      'name/kebab',
+      'time/seconds',
+      'html/icon',
+      'size/rem',
+      'color/css',
+      'asset/url',
+      'fontFamily/css',
+      'cubicBezier/css',
+      'strokeStyle/css/shorthand',
+      'border/css/shorthand',
+      'typography/css/shorthand',
+      'transition/css/shorthand',
+      // Add this one explicitly:
+      'shadow/css/shorthand',
+    ],
     buildPath: `generated/_tmp/${mode}/`,
     files: [{
       destination: 'tokens.css',
       format: 'css/variables',
       options: {
-        outputReferences: false, // resolve to hex; mode swap handles dark
+        outputReferences: false,
         selector: mode === 'light' ? ':root' : '[data-theme="dark"]',
       },
     }],

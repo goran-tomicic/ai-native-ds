@@ -288,5 +288,40 @@
       "$value": "40px",
       "$type": "dimension"
     }
+  },
+  "shadow": {
+    "sm": {
+      "$type": "shadow",
+      "$value": {
+        "color": "#00000014",
+        "offsetX": "0px",
+        "offsetY": "1px",
+        "blur": "2px",
+        "spread": "0px"
+      },
+      "$description": "Subtle shadow for slightly raised elements"
+    },
+    "md": {
+      "$type": "shadow",
+      "$value": {
+        "color": "#00000022",
+        "offsetX": "0px",
+        "offsetY": "2px",
+        "blur": "4px",
+        "spread": "0px"
+      },
+      "$description": "Default raised card shadow"
+    },
+    "lg": {
+      "$type": "shadow",
+      "$value": {
+        "color": "#00000033",
+        "offsetX": "0px",
+        "offsetY": "8px",
+        "blur": "16px",
+        "spread": "-4px"
+      },
+      "$description": "Modal, popover, dialog shadows"
+    }
   }
 }

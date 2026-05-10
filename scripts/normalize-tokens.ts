@@ -13,6 +13,49 @@ import { dirname, resolve } from 'node:path'
  *  - Number tokens with space/radius prefix → "Npx" dimension type
  */
 
+// ─── Authored tokens that Figma Variables can't express ──────────────────────
+// Figma Variables (as of late 2024) doesn't support shadow as a variable type.
+// Effects are a separate Figma primitive (Effect Styles) outside the Variables system.
+// We author shadows here so they flow through the same DTCG pipeline as everything else.
+
+const AUTHORED_CORE_TOKENS = {
+  shadow: {
+    sm: {
+      $type: 'shadow',
+      $value: {
+        color:   '#00000014',
+        offsetX: '0px',
+        offsetY: '1px',
+        blur:    '2px',
+        spread:  '0px',
+      },
+      $description: 'Subtle shadow for slightly raised elements',
+    },
+    md: {
+      $type: 'shadow',
+      $value: {
+        color:   '#00000022',
+        offsetX: '0px',
+        offsetY: '2px',
+        blur:    '4px',
+        spread:  '0px',
+      },
+      $description: 'Default raised card shadow',
+    },
+    lg: {
+      $type: 'shadow',
+      $value: {
+        color:   '#00000033',
+        offsetX: '0px',
+        offsetY: '8px',
+        blur:    '16px',
+        spread:  '-4px',
+      },
+      $description: 'Modal, popover, dialog shadows',
+    },
+  },
+}
+
 type RawVariableValue =
   | string
   | number
@@ -110,6 +153,12 @@ async function main() {
       for (const variable of mode.variables) {
         setNested(tree, normalizeKey(variable.name), formatValue(variable))
         count++
+      }
+
+      // Inject authored tokens that Figma can't express (only into 'core')
+      if (collectionName === 'core') {
+        Object.assign(tree, AUTHORED_CORE_TOKENS)
+        count += 3 // shadow.sm, shadow.md, shadow.lg
       }
 
       const target = resolve(`tokens/${collectionName}.tokens.json`)
