@@ -1,7 +1,7 @@
 {
   "$schema": "https://github.com/goran-tomicic/ai-native-ds/blob/main/schemas/component.schema.json",
   "version": "0.1.0",
-  "generatedAt": "2026-05-10T15:27:20.956Z",
+  "generatedAt": "2026-05-11T21:19:29.506Z",
   "overview": {
     "name": "ai-native-ds",
     "description": "Design system built for AI agents as first-class consumers.",
@@ -310,6 +310,41 @@
         "10": {
           "$value": "40px",
           "$type": "dimension"
+        }
+      },
+      "shadow": {
+        "sm": {
+          "$type": "shadow",
+          "$value": {
+            "color": "#00000014",
+            "offsetX": "0px",
+            "offsetY": "1px",
+            "blur": "2px",
+            "spread": "0px"
+          },
+          "$description": "Subtle shadow for slightly raised elements"
+        },
+        "md": {
+          "$type": "shadow",
+          "$value": {
+            "color": "#00000022",
+            "offsetX": "0px",
+            "offsetY": "2px",
+            "blur": "4px",
+            "spread": "0px"
+          },
+          "$description": "Default raised card shadow"
+        },
+        "lg": {
+          "$type": "shadow",
+          "$value": {
+            "color": "#00000033",
+            "offsetX": "0px",
+            "offsetY": "8px",
+            "blur": "16px",
+            "spread": "-4px"
+          },
+          "$description": "Modal, popover, dialog shadows"
         }
       }
     },
@@ -1558,6 +1593,379 @@
           {
             "component": "Section",
             "when": "you need a major page region; Card is for smaller groupings within a region"
+          }
+        ]
+      }
+    },
+    "dialog": {
+      "$schema": "../../schemas/component.schema.json",
+      "name": "Dialog",
+      "version": "0.1.0",
+      "status": "experimental",
+      "category": "overlay",
+      "description": "Modal dialog. Built on the native HTML <dialog> element with showModal() semantics: focus trap, escape-to-close, and top-layer rendering handled by the browser. Composes with Dialog.Title (required for accessibility), Dialog.Description (optional but recommended), Dialog.Body, Dialog.Footer, and Dialog.Trigger. For non-modal floating content, use Popover (separate component, future).",
+      "props": {
+        "size": {
+          "type": "enum",
+          "values": [
+            "sm",
+            "md",
+            "lg"
+          ],
+          "default": "md",
+          "description": "Max-width scale.",
+          "guidance": {
+            "sm": "400px max-width. Use for confirmations, simple prompts, login forms.",
+            "md": "560px max-width. Default. Comfortable for most forms, settings panels, content review.",
+            "lg": "720px max-width. Use for complex forms, multi-step flows, side-by-side comparisons. Beyond this size, consider a dedicated page instead of a dialog."
+          }
+        },
+        "open": {
+          "type": "boolean",
+          "optional": true,
+          "description": "Controlled open state. When provided, Dialog is controlled — parent owns the open/closed state. When omitted, Dialog manages its own state via Dialog.Trigger."
+        },
+        "onOpenChange": {
+          "type": "(open: boolean) => void",
+          "optional": true,
+          "description": "Called when the dialog requests state change (trigger click, escape key, backdrop click). Required if `open` is provided."
+        },
+        "closeOnBackdropClick": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether clicking the backdrop closes the dialog. Set to false for dialogs where accidental dismissal would lose user work (multi-step forms, destructive confirmations)."
+        },
+        "closeOnEscape": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the Escape key closes the dialog. Almost always true. Set to false only for dialogs that explicitly require an action (e.g., a 'must agree to terms' gate)."
+        },
+        "initialFocusRef": {
+          "type": "RefObject<HTMLElement>",
+          "optional": true,
+          "description": "Element to focus when the dialog opens. Defaults to the first focusable element in the dialog content. Use this to focus a specific input, the destructive button in a destructive dialog (so escape is the easier path), or a primary action."
+        }
+      },
+      "states": [
+        "closed",
+        "opening",
+        "open",
+        "closing"
+      ],
+      "tokens": {
+        "size_slots": {
+          "sm": {
+            "max_width": "400px"
+          },
+          "md": {
+            "max_width": "560px"
+          },
+          "lg": {
+            "max_width": "720px"
+          }
+        },
+        "shared": {
+          "bg": "color.common.surface.overlay",
+          "fg": "color.common.fg.strong",
+          "border": "color.common.border.muted",
+          "radius": "radius.lg",
+          "shadow": "shadow.lg",
+          "padding": "space.6",
+          "backdrop_bg": "rgba(0, 0, 0, 0.5)",
+          "backdrop_blur": "none"
+        },
+        "effects": {
+          "open_transition": "opacity 150ms ease, transform 150ms ease",
+          "close_transition": "opacity 100ms ease",
+          "open_transform": "scale(1)",
+          "closed_transform": "scale(0.96)",
+          "open_opacity": "1",
+          "closed_opacity": "0"
+        }
+      },
+      "accessibility": {
+        "role": "dialog",
+        "keyboard": [
+          "Tab",
+          "Shift+Tab",
+          "Escape"
+        ],
+        "requirements": [
+          "Must have Dialog.Title — maps to aria-labelledby on the dialog element. Without it, screen readers announce the dialog with no name.",
+          "Dialog.Description recommended for any dialog where the action or content needs explanation. Maps to aria-describedby.",
+          "Focus trap is handled by the native <dialog> showModal() behavior — Tab and Shift+Tab cycle within the dialog only.",
+          "On open: focus moves to the dialog (specifically: initialFocusRef if provided, otherwise the first focusable element, otherwise the dialog itself).",
+          "On close: focus returns to the element that opened the dialog (typically the Dialog.Trigger).",
+          "Escape closes the dialog by default. Override only with strong justification (e.g., must-acknowledge gate).",
+          "The backdrop is rendered by the browser's ::backdrop pseudo-element and is non-interactive in modal mode.",
+          "Multiple dialogs at once are unsupported in v0.1 — open a new dialog requires closing the current one. Nested modal dialogs are a known UX antipattern."
+        ],
+        "contrast": "Dialog content must meet 4.5:1 minimum on the overlay background. The overlay background is color.common.surface.overlay which is slightly elevated from surface.base — verify contrast on whatever palette consumers put inside the dialog."
+      },
+      "composition": {
+        "allowedChildren": [
+          "Dialog.Trigger",
+          "Dialog.Title",
+          "Dialog.Description",
+          "Dialog.Body",
+          "Dialog.Footer"
+        ],
+        "forbiddenChildren": [
+          "Dialog"
+        ],
+        "commonParents": [
+          "page",
+          "any"
+        ],
+        "subcomponentOrdering": "Dialog.Trigger first (outside the dialog content), then Dialog.Title → Description → Body → Footer. Title is required. Trigger is optional if Dialog is controlled."
+      },
+      "subcomponents": [
+        {
+          "name": "Dialog.Trigger",
+          "description": "Element that opens the dialog. Typically wraps a Button. The trigger element receives focus when the dialog closes (focus restoration).",
+          "props": {
+            "children": {
+              "type": "ReactNode",
+              "description": "The trigger element. Most commonly a Button."
+            },
+            "asChild": {
+              "type": "boolean",
+              "default": false,
+              "description": "When true, Dialog.Trigger renders its child directly (passes props through) instead of wrapping in its own element. Use this when wrapping a Button or other interactive element to avoid nested buttons."
+            }
+          },
+          "rules": {
+            "do": [
+              "Use asChild=true when wrapping a Button to prevent nested <button> elements",
+              "Place Dialog.Trigger as the first child of Dialog so it's outside the dialog content",
+              "The trigger should describe what the dialog will do ('Delete account', 'Edit settings'), not just label its existence ('Open dialog')"
+            ],
+            "dont": [
+              "Don't put Dialog.Trigger inside Dialog.Body or Dialog.Footer — it's a sibling of those, not a child",
+              "Don't use asChild=true with non-interactive elements like <div> — the trigger needs to be a real button for keyboard accessibility",
+              "Don't render multiple Dialog.Trigger elements in one Dialog — if you need multiple triggers, use controlled mode (open/onOpenChange) with separate buttons"
+            ]
+          },
+          "examples": [
+            {
+              "name": "Button trigger",
+              "code": "<Dialog>\n  <Dialog.Trigger asChild>\n    <Button palette=\"danger\" variant=\"solid\">Delete account</Button>\n  </Dialog.Trigger>\n  <Dialog.Title>Delete your account?</Dialog.Title>\n  ...\n</Dialog>",
+              "context": "Destructive action requiring confirmation"
+            }
+          ]
+        },
+        {
+          "name": "Dialog.Title",
+          "description": "Required heading for the dialog. Maps to aria-labelledby. Rendered as an h2 by default.",
+          "props": {
+            "children": {
+              "type": "ReactNode",
+              "description": "The title text. Keep it short and action-oriented."
+            },
+            "as": {
+              "type": "string",
+              "optional": true,
+              "default": "h2",
+              "description": "HTML element to render as. Default 'h2'. Use 'h1' only if the dialog is the primary content of the page (rare)."
+            }
+          },
+          "rules": {
+            "do": [
+              "Phrase the title as a question for confirmations ('Delete your account?')",
+              "Phrase the title as a statement for informational dialogs ('Account deleted')",
+              "Keep titles under ~50 characters — they're focusing elements, not full sentences"
+            ],
+            "dont": [
+              "Don't omit Dialog.Title — even decorative dialogs need an accessible name",
+              "Don't put long form labels in the title — those belong in Dialog.Body or in the form itself",
+              "Don't use 'Dialog' or 'Modal' as the title — describe what the dialog does"
+            ]
+          },
+          "examples": [
+            {
+              "name": "Confirmation question",
+              "code": "<Dialog.Title>Delete your account?</Dialog.Title>",
+              "context": "Destructive confirmation"
+            },
+            {
+              "name": "Informational statement",
+              "code": "<Dialog.Title>Welcome to your dashboard</Dialog.Title>",
+              "context": "Onboarding dialog"
+            }
+          ]
+        },
+        {
+          "name": "Dialog.Description",
+          "description": "Optional descriptive text below the title. Maps to aria-describedby. Provides context, consequences, or instructions related to the dialog's action.",
+          "props": {
+            "children": {
+              "type": "ReactNode",
+              "description": "Description text. Typically one or two sentences."
+            }
+          },
+          "rules": {
+            "do": [
+              "Use Dialog.Description for consequences of destructive actions ('This cannot be undone')",
+              "Use Dialog.Description for context that helps the user decide ('Your collaborators will lose access')",
+              "Keep descriptions concise — long explanations belong in Dialog.Body"
+            ],
+            "dont": [
+              "Don't repeat the title in the description",
+              "Don't put form fields or interactive content in Description — that's Body's job",
+              "Don't omit Description for destructive actions — the consequence statement is what makes the confirmation meaningful"
+            ]
+          },
+          "examples": [
+            {
+              "name": "Destructive consequence",
+              "code": "<Dialog.Description>This action is permanent and cannot be undone. Your projects, files, and collaborator access will be removed.</Dialog.Description>",
+              "context": "Account deletion confirmation"
+            }
+          ]
+        },
+        {
+          "name": "Dialog.Body",
+          "description": "Main content area. Use for form fields, lists, embedded content, or anything that doesn't fit the title/description/footer pattern.",
+          "props": {
+            "children": {
+              "type": "ReactNode",
+              "description": "Body content. Can include form fields, paragraphs, lists, or embedded components."
+            }
+          },
+          "rules": {
+            "do": [
+              "Use Body for form content in dialogs with input (Input, Select, Checkbox, etc.)",
+              "Use Body for content that's longer than Description allows",
+              "Body is optional — simple confirmation dialogs may only need Title + Description + Footer"
+            ],
+            "dont": [
+              "Don't put the title or description here — they have their own subcomponents",
+              "Don't put primary actions here — those belong in Dialog.Footer",
+              "Don't make Body extremely tall — if scrolling is required, consider a dedicated page instead of a dialog"
+            ]
+          },
+          "examples": [
+            {
+              "name": "Form fields",
+              "code": "<Dialog.Body>\n  <FormField label=\"Email\"><Input type=\"email\" /></FormField>\n  <FormField label=\"Password\"><Input type=\"password\" /></FormField>\n</Dialog.Body>",
+              "context": "Login dialog"
+            }
+          ]
+        },
+        {
+          "name": "Dialog.Footer",
+          "description": "Footer with action buttons. Buttons are end-aligned (LTR) with primary action on the right. Top border separator.",
+          "props": {
+            "children": {
+              "type": "ReactNode",
+              "description": "Action buttons. Typically a Cancel + primary action pair."
+            }
+          },
+          "rules": {
+            "do": [
+              "Place the primary action on the right (LTR): Cancel + Confirm, Cancel + Save, Cancel + Delete",
+              "Use one primary action per dialog — competing primaries force the user to choose between two solid buttons",
+              "Use palette='danger' variant='solid' for destructive primary actions, palette='primary' variant='solid' for constructive",
+              "Use palette='neutral' variant='subtle' for the Cancel action"
+            ],
+            "dont": [
+              "Don't reverse the order (Confirm + Cancel) — LTR convention is Cancel on left, primary on right",
+              "Don't include three or more buttons — if there are three actions, the dialog is doing too much",
+              "Don't omit a way to dismiss — even a button-less dialog needs Escape and backdrop close enabled"
+            ]
+          },
+          "examples": [
+            {
+              "name": "Destructive confirmation",
+              "code": "<Dialog.Footer>\n  <Button palette=\"neutral\" variant=\"subtle\">Cancel</Button>\n  <Button palette=\"danger\" variant=\"solid\">Delete account</Button>\n</Dialog.Footer>",
+              "context": "Account deletion dialog"
+            },
+            {
+              "name": "Constructive save",
+              "code": "<Dialog.Footer>\n  <Button palette=\"neutral\" variant=\"subtle\">Cancel</Button>\n  <Button palette=\"primary\" variant=\"solid\">Save changes</Button>\n</Dialog.Footer>",
+              "context": "Settings edit dialog"
+            }
+          ]
+        }
+      ],
+      "rules": {
+        "do": [
+          "Always include Dialog.Title — accessibility requires it",
+          "Use Dialog.Description for any non-trivial action, especially destructive ones",
+          "Set closeOnBackdropClick={false} for destructive dialogs and multi-step forms where accidental dismissal loses work",
+          "Use initialFocusRef to focus the Cancel button (not the destructive action) in destructive dialogs — makes Escape the path of least resistance",
+          "Keep dialog content focused on a single task — if you find yourself adding tabs or stepping through multi-page content, consider a dedicated page",
+          "Use size='sm' for simple confirmations, 'md' for forms, 'lg' for complex content"
+        ],
+        "dont": [
+          "Don't nest dialogs — open a second dialog requires closing the first. Native <dialog> behavior enforces this",
+          "Don't disable Escape key closing without strong justification — Escape is a fundamental keyboard expectation",
+          "Don't override the focus trap — the native <dialog> handles it correctly",
+          "Don't put navigation links or non-action buttons in Dialog.Footer — Footer is for the dialog's primary actions",
+          "Don't use Dialog for non-modal content (toasts, popovers, drawers) — those have their own components or are deferred"
+        ]
+      },
+      "examples": [
+        {
+          "name": "Destructive confirmation",
+          "code": "<Dialog>\n  <Dialog.Trigger asChild>\n    <Button palette=\"danger\" variant=\"solid\">Delete account</Button>\n  </Dialog.Trigger>\n  <Dialog.Title>Delete your account?</Dialog.Title>\n  <Dialog.Description>This action is permanent and cannot be undone. Your projects, files, and collaborator access will be removed.</Dialog.Description>\n  <Dialog.Footer>\n    <Button palette=\"neutral\" variant=\"subtle\">Cancel</Button>\n    <Button palette=\"danger\" variant=\"solid\">Delete account</Button>\n  </Dialog.Footer>\n</Dialog>",
+          "context": "Destructive action requiring confirmation"
+        },
+        {
+          "name": "Form dialog",
+          "code": "<Dialog size=\"md\" closeOnBackdropClick={false}>\n  <Dialog.Trigger asChild>\n    <Button palette=\"primary\" variant=\"solid\">Edit profile</Button>\n  </Dialog.Trigger>\n  <Dialog.Title>Edit your profile</Dialog.Title>\n  <Dialog.Body>\n    <FormField label=\"Name\"><Input /></FormField>\n    <FormField label=\"Bio\"><Input /></FormField>\n  </Dialog.Body>\n  <Dialog.Footer>\n    <Button palette=\"neutral\" variant=\"subtle\">Cancel</Button>\n    <Button palette=\"primary\" variant=\"solid\">Save changes</Button>\n  </Dialog.Footer>\n</Dialog>",
+          "context": "Settings or profile edit"
+        },
+        {
+          "name": "Informational acknowledgment",
+          "code": "<Dialog size=\"sm\">\n  <Dialog.Title>Update available</Dialog.Title>\n  <Dialog.Description>A new version of the app is available. The page will reload after you confirm.</Dialog.Description>\n  <Dialog.Footer>\n    <Button palette=\"primary\" variant=\"solid\">Reload</Button>\n  </Dialog.Footer>\n</Dialog>",
+          "context": "App update notification"
+        },
+        {
+          "name": "Controlled dialog with programmatic open",
+          "code": "const [open, setOpen] = useState(false)\n\n<Dialog open={open} onOpenChange={setOpen}>\n  <Dialog.Title>Confirm action</Dialog.Title>\n  <Dialog.Description>Are you sure?</Dialog.Description>\n  <Dialog.Footer>\n    <Button palette=\"neutral\" variant=\"subtle\" onClick={() => setOpen(false)}>Cancel</Button>\n    <Button palette=\"primary\" variant=\"solid\" onClick={handleConfirm}>Confirm</Button>\n  </Dialog.Footer>\n</Dialog>",
+          "context": "Programmatic dialog without Dialog.Trigger"
+        }
+      ],
+      "antiPatterns": [
+        {
+          "bad": "<Dialog>\n  <Dialog.Body>Are you sure?</Dialog.Body>\n</Dialog>",
+          "good": "<Dialog>\n  <Dialog.Title>Confirm action</Dialog.Title>\n  <Dialog.Description>Are you sure?</Dialog.Description>\n  <Dialog.Footer>...</Dialog.Footer>\n</Dialog>",
+          "why": "Dialog requires Dialog.Title for accessibility. Without it, screen readers announce a dialog with no name. The descriptive text belongs in Dialog.Description, not Dialog.Body."
+        },
+        {
+          "bad": "<Dialog>\n  <Dialog.Footer>\n    <Button palette=\"danger\" variant=\"solid\">Delete</Button>\n    <Button palette=\"neutral\" variant=\"subtle\">Cancel</Button>\n  </Dialog.Footer>\n</Dialog>",
+          "good": "<Dialog>\n  <Dialog.Footer>\n    <Button palette=\"neutral\" variant=\"subtle\">Cancel</Button>\n    <Button palette=\"danger\" variant=\"solid\">Delete</Button>\n  </Dialog.Footer>\n</Dialog>",
+          "why": "LTR convention is Cancel on the left, primary action on the right. Reversing the order breaks the user's muscle memory and increases the risk of accidental clicks."
+        },
+        {
+          "bad": "<Dialog closeOnEscape={false} closeOnBackdropClick={false}>\n  <Dialog.Title>Welcome</Dialog.Title>\n  ...\n</Dialog>",
+          "good": "<Dialog>\n  <Dialog.Title>Welcome</Dialog.Title>\n  ...\n</Dialog>",
+          "why": "Disabling both Escape and backdrop click creates a dialog with no dismissal affordance other than action buttons. This is a known accessibility antipattern unless the dialog represents a mandatory gate (terms of service, password requirement). For informational dialogs, leave the defaults."
+        },
+        {
+          "bad": "<Dialog>\n  <Dialog.Trigger asChild>\n    <Button>Edit</Button>\n  </Dialog.Trigger>\n  <Dialog.Title>Edit settings</Dialog.Title>\n  <Dialog.Body>\n    <Button palette=\"primary\" variant=\"solid\">Save</Button>\n  </Dialog.Body>\n</Dialog>",
+          "good": "<Dialog>\n  <Dialog.Trigger asChild>\n    <Button>Edit</Button>\n  </Dialog.Trigger>\n  <Dialog.Title>Edit settings</Dialog.Title>\n  <Dialog.Body>...form fields...</Dialog.Body>\n  <Dialog.Footer>\n    <Button palette=\"neutral\" variant=\"subtle\">Cancel</Button>\n    <Button palette=\"primary\" variant=\"solid\">Save</Button>\n  </Dialog.Footer>\n</Dialog>",
+          "why": "Primary action buttons belong in Dialog.Footer, not Dialog.Body. Footer is the conventional location for actions, has correct visual treatment (top border, end-aligned), and signals to the user where to look for what to do next."
+        }
+      ],
+      "related": {
+        "use_instead_when": [
+          {
+            "component": "Popover",
+            "when": "the content is non-modal (doesn't block underlying interaction) — future component"
+          },
+          {
+            "component": "Toast",
+            "when": "the content is a transient notification — future component"
+          },
+          {
+            "component": "Sheet",
+            "when": "the content slides in from an edge (drawer pattern) — future component"
+          },
+          {
+            "component": "Page",
+            "when": "the content is complex enough that scrolling or multi-step navigation is needed"
           }
         ]
       }

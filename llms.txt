@@ -25,6 +25,7 @@ For architecture reasoning:
 - Badge — A small visual label used to annotate or call out a status, count, or category
 - Button — Triggers an action
 - Card — Container for grouped content
+- Dialog — Modal dialog
 - Input — Single-line text input
 - Spinner — Indicates ongoing background activity
 
