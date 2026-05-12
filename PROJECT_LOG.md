@@ -11,9 +11,9 @@
 
 Most design systems are documented for humans. But increasingly, the consumer is a program — an LLM generating UI, an agent composing components, a code assistant picking tokens.
 
-**Current thesis (after Days 24-25):** AI models preserve the abstraction level their design system presents when reimplementation is expensive. When reimplementation is cheap, models reimplement — but they do so faithfully to the spec's grammar, and bring additional engineering competence to the surrounding code structure.
+**Current thesis (after Day 28):** AI consumption of design system components is determined not by the cost of reimplementation, but by the model's perception of whether the component is available as a callable artifact. With spec alone, models reimplement regardless of complexity. With runtime context (codebase access, import paths, package registry), models consume.
 
-**Upcoming test (Day 28):** Dialog AI consumption test directly probes this thesis. Dialog is the richest component in the system; the prediction is that AI will consume it correctly.
+**Concrete intervention identified:** Add explicit import information to every `.llm.md` file. The hypothesis can be tested directly on Day 29.
 
 ---
 
@@ -26,7 +26,7 @@ Most design systems are documented for humans. But increasingly, the consumer is
 | Phase 2 — case study writing    | Writing chat   | Long-form post + case study page + video              | 🟡 In progress |
 | Phase 3 — finish original scope | Days 19+       | Build remaining components from original 10-week plan | 🟡 In progress |
 
-Phase 3 progress: 6 of 11 originally-planned components shipped (Badge, Button, Spinner from Phase 1 + Input, Card, Dialog from Phase 3). 5 components remaining for original scope. Plus Dialog playground + AI test (Day 28), then 5 more components from original Weeks 6–7, then pipeline hardening.
+Phase 3 progress: 6 of 11 originally-planned components fully shipped. Plus Day 28 produced the most consequential thesis refinement of the entire project. Phase 3 remaining: Day 29 intervention test, then 4-5 more components from original scope, then pipeline hardening.
 
 ---
 
@@ -37,15 +37,15 @@ Phase 3 progress: 6 of 11 originally-planned components shipped (Badge, Button, 
 - React + TypeScript + Tailwind v3.4 + cva + Radix primitives where helpful
 - DTCG token format, mode-aware via Style Dictionary
 - Three-layer token architecture (core + semantic/common + semantic/palette)
-- Token sources are bifurcated: Figma Variables for what Figma supports; `AUTHORED_CORE_TOKENS` in `scripts/normalize-tokens.ts` for what it doesn't
+- Token sources are bifurcated: Figma Variables for what Figma supports; `AUTHORED_CORE_TOKENS` for what it doesn't
 - Disabled state via opacity + pointer-events, palette-agnostic
 - AI consumption surfaces: llms.txt, .llm.md, static API JSON, MCP server
 - Single source of truth for conventions: `docs/system-meta.json`
 - Component prop naming: `palette` for intent, `variant` for visual treatment
 - Subcomponents as first-class entities: `Component.SubcomponentName`
-- Component schema does not require `accessibility.role` (relaxed Day 22)
-- **Overlay components use native browser primitives where viable** (Day 26: Dialog uses native `<dialog>` element instead of Radix wrap)
-- **Context-based ARIA wiring for compound components with required accessibility associations** (Day 27 established this pattern)
+- Component schema does not require `accessibility.role`
+- Overlay components use native browser primitives where viable
+- Context-based ARIA wiring for compound components with required accessibility associations
 - Public repo, commit history is part of the artifact
 
 ### Editorial (writing chat)
@@ -64,7 +64,7 @@ Foundations, tokens, components (Badge, Button, Spinner), AI consumption layer, 
 
 ### Day 19 ✅ Architectural cleanup + Input spec
 
-Renamed `style` → `variant` system-wide. Schema upgrade for subcomponents.
+Renamed `style` → `variant`. Schema upgrade for subcomponents.
 
 ### Day 20 ✅ Input implementation
 
@@ -72,7 +72,7 @@ cva matrix, compound subcomponents via children inspection.
 
 ### Day 21 ✅ Input playground + first compound component AI test
 
-AI test passed cleanly. Compound API consumption confirmed.
+AI test passed. Compound API consumption confirmed.
 
 ### Day 22 ✅ Card spec + schema relaxation
 
@@ -92,128 +92,110 @@ Reimplementation pattern confirmed at scale. Thesis refined: abstraction preserv
 
 ### Day 26 ✅ Dialog spec
 
-~350 lines of JSON. Most complex spec in the system. Native `<dialog>` foundation, 5 subcomponents, modal-only scope, size scale, controlled+uncontrolled modes.
+~350 lines. Most complex spec in the system. Native `<dialog>` foundation, 5 subcomponents.
 
 ### Day 27 ✅ Dialog implementation
 
-**The most architecturally complex component shipped.**
+~200 lines. React wrapper around native `<dialog>`, context-based ARIA wiring, displayName-based Trigger separation.
 
-**What's in `components/dialog/dialog.tsx`:**
+### Day 28 ✅ Dialog playground + AI consumption test (the thesis test)
 
-1. **React wrapper around native `<dialog>`**
-   - `useRef` for the dialog element with merged forwarded ref
-   - `useEffect` to call `.showModal()` / `.close()` when `open` prop changes
-   - Internal state for uncontrolled mode (`Dialog.Trigger` driven)
-   - Bridges imperative DOM API with React's declarative model
+**The most consequential AI test of the entire project.**
 
-2. **Five compound subcomponents:**
-   - `Dialog.Trigger` — with `asChild` prop for wrapping interactive elements (Button), preserves child's onClick
-   - `Dialog.Title` — renders as `h2` by default, configurable via `as` prop
-   - `Dialog.Description` — descriptive paragraph
-   - `Dialog.Body` — main content slot
-   - `Dialog.Footer` — end-aligned actions with top border separator
+**Playground integration:**
 
-3. **Context-based ARIA wiring** (new architectural pattern)
-   - `DialogContext` provides `titleId`, `descriptionId`, `open`, `setOpen` to all subcomponents
-   - `Dialog.Title` and `Dialog.Description` read their IDs from context and apply them to their own elements
-   - Parent `<dialog>` reads same IDs and applies `aria-labelledby` and `aria-describedby`
-   - Eliminates the need for children inspection to inject IDs
+- Destructive confirmation (uncontrolled with Dialog.Trigger)
+- Controlled form dialog (open/onOpenChange managed externally)
+- Three sizes (sm/md/lg) demonstrating max-width scale
+- Locked dialog (closeOnBackdropClick=false, closeOnEscape=false)
+- All visual checks passed in both modes
 
-4. **Trigger separation via children inspection**
-   - `Dialog.Trigger` renders _outside_ the `<dialog>` element
-   - Other subcomponents render _inside_
-   - Children inspection via `displayName` separates the two
+**AI consumption test:**
 
-5. **`useId()` for SSR-safe stable IDs** — React 18+ hook, eliminates manual ID management
+Fresh Claude.ai, only `dialog.llm.md` pasted. Same prompt as Day 8 Test 2 and Day 24 Test #1 — destructive confirmation dialog. Third time this exact prompt has been run, this time at peak system maturity.
 
-6. **Backdrop click detection** — `event.target === dialogRef` means the click was on the backdrop (not content). Closes dialog if `closeOnBackdropClick: true`.
+**Result: reimplementation, but with explicit awareness.**
 
-7. **Native event integration**
-   - `cancel` event from Escape key — preventable if `closeOnEscape: false`
-   - `close` event for any closure — syncs state if dialog closed by other means
+The model produced ~250 lines reimplementing the entire design system locally. No imports. Everything defined as shims. But unlike Day 24's silent reimplementation, the model explicitly stated:
 
-8. **`initialFocusRef` via `queueMicrotask`**
-   - Native `<dialog>.showModal()` auto-focuses first focusable element
-   - To override with `initialFocusRef`, defer focus call by one microtask
-   - Ensures it runs after browser's default focus has run
+> _"Primitive shims (replace with real DS imports in production) — the spec defines a component API but ships no implementation. I wrote minimal Button and Dialog shims inline. In production these would be real DS imports."_
 
-**Architectural significance:**
+The reimplementation was a conscious choice the model articulated, not a default behavior.
 
-- **Context-based subcomponent wiring is a new pattern in the system.** Card and Input used `displayName` inspection for _positioning_; Dialog uses context for _data sharing_. Both patterns now established. Future components with required ARIA associations (Tabs, Listbox, Combobox) will likely use context.
-- **Native primitive wrapping pattern proven.** ~200 lines of code wrapping `<dialog>`, vs. estimated ~300 lines for native focus trap + portal + scroll lock. Browser does the work; we provide ergonomics.
-- **Bridges imperative-to-declarative cleanly.** The `useEffect` watching `open` is the only "magic" needed. Could serve as a model for future components wrapping imperative APIs.
+**What this refutes:** Day 25's reimplementation-cost thesis. Dialog is the richest component in the system. The thesis predicted consumption. Reality was reimplementation. So cost wasn't the variable.
 
-**Why this is the right pre-Day-28 setup:**
+**Refined thesis (v7):**
 
-Dialog is now genuinely _rich_. The implementation has:
+> _AI consumption of design system components is determined not by the cost of reimplementation, but by the model's perception of whether the component is available as a callable artifact. With spec alone (`.llm.md`), models reimplement regardless of complexity. With runtime context (codebase access, import paths, package registry), models consume._
 
-- Native `<dialog>` showModal semantics
-- Imperative-to-declarative bridge
-- Context-based ARIA wiring
-- Children inspection for Trigger separation
-- Backdrop click detection
-- Initial focus override
-- Cancel/close event handling
-- 5 subcomponents with type-safe compound pattern
+**What explains all the data:**
 
-Reimplementing all of this from scratch is genuinely expensive. Day 28's prediction (AI will consume rather than reimplement) has the right substrate to test against.
+- Day 21 (Input, `.llm.md` only) → consumed (model didn't think hard about implementation)
+- Day 24 (Card, `.llm.md` only) → reimplemented silently (implementation easy, no awareness needed)
+- Day 28 (Dialog, `.llm.md` only) → reimplemented with explicit awareness (implementation forced the choice into consciousness)
+- Day 10c (Button, Claude Code with codebase) → consumed (codebase access provided import visibility)
+
+The variable that explains all four: **does the model have visibility into where the component lives?**
+
+**Secondary finding — spec adherence remained perfect.** The reimplementation honored 11 out of 11 spec rules tested. The spec is the load-bearing artifact; consume vs. reimplement affects code reuse, not output correctness. This is a positive finding for design systems: a good spec ensures correctness whether AI consumes or reimplements.
+
+**Concrete intervention identified:** Add import information to `.llm.md` files. If the model sees `import { Dialog } from '@ai-native-ds/dialog'` (or equivalent) at the top of the spec, the perceived-availability variable changes. Day 29 will test this directly.
+
+**Practitioner advice now possible:**
+
+> _"For AI to consume your design system, the spec alone isn't enough. The AI needs information about where the component lives — import path, package name, or codebase context. Without that, AI defaults to reimplementation regardless of component complexity. Add a 'Usage' or 'Import' section to your AI-facing documentation: `import { Dialog } from '@your-org/design-system'`. This single line is what bridges the gap between 'AI knows how the component should work' and 'AI uses the component you wrote.'"_
+
+This is concrete, testable, actionable. Strongest practitioner advice in the project.
+
+**Severity for case study:** Highest of the entire project. Day 28 produces a third thesis refinement, concrete actionable advice, and a clean intervention to test on Day 29. The thesis arc is now substantively complete — seven iterations, each grounded in data, ending in a specific recommendation practitioners can implement.
 
 **Artifacts:**
 
-- `components/dialog/dialog.tsx` v0.1.0 — ~200 lines
-- Type-checked clean
+- `playground/src/App.tsx` — Dialog sections added
+- `docs/demo-day/day-28-dialog-test.md` — full test analysis
+- Substantial handoff sent to writing chat (Section 5, 7, 8 implications)
+- Two commits pushed
 
 ---
 
-### Day 28 🟡 Planned — Dialog playground + AI test (THE thesis test)
+### Day 29 🟡 Planned — Intervention test (the perceived-availability hypothesis)
 
-**Two parts.**
+**The most testable hypothesis of the project.** Add explicit import information to `dialog.llm.md`, re-run the exact same prompt, observe whether consumption appears.
 
-**Part 1: Playground integration (~30 min)**
+**Two parts:**
 
-Card-style verification:
+1. **Modify `dialog.llm.md`** (~10 min)
+   - Add a "## Usage" or "## Import" section near the top
+   - Include: `import { Dialog } from '@ai-native-ds/dialog'` (or similar import string)
+   - Possibly add: a brief "How to use this" sentence framing the import as required
 
-- Default destructive confirmation dialog
-- Form dialog with body content
-- Controlled mode (open managed by external state)
-- All three sizes (sm/md/lg)
-- Backdrop click + Escape behavior
-- `closeOnBackdropClick: false` + `initialFocusRef` for destructive flow
-- Dark mode pass via existing toggle
+2. **Re-run the Day 28 prompt** (~30 min)
+   - Fresh Claude.ai conversation
+   - Same exact prompt as Day 28
+   - Capture full output
+   - Compare: does the model now import Dialog, or does it still reimplement?
 
-**Part 2: AI consumption test (~30 min) — THE THESIS TEST**
+**Possible outcomes:**
 
-Fresh Claude.ai conversation, only `dialog.llm.md` pasted. Prompt:
+- **Model consumes** → thesis confirmed with concrete intervention. The case study now has a fix that practitioners can apply.
+- **Model still reimplements** → thesis needs further refinement. Maybe `.llm.md` isn't enough even with import info; maybe the runtime context (codebase access, actual file existence) is what matters. Worth investigating: does the model recognize the import path as "real" or treat it as fictional?
+- **Model imports but breaks differently** → surfaces a new failure mode. Possibly the model imports correctly but mis-uses the API in a way it didn't when reimplementing (because reimplementation forced explicit attention to the contract).
 
-> "Build a delete account confirmation dialog. It should explain the consequences and require the user to confirm or cancel."
+All three outcomes are publishable. The intervention test makes the case study end on confirmed advice rather than open question.
 
-**Prediction (per Day 25 thesis):** AI consumes Dialog correctly via imports because focus trap, portal, scroll lock, native `<dialog>` glue, ARIA wiring, and 5-subcomponent composition are expensive to reimplement.
-
-**Alternative outcomes worth being ready for:**
-
-1. **AI consumes Dialog correctly** — confirms thesis. The reimplementation-cost hypothesis is robust across rich + thin components.
-
-2. **AI bypasses for native `<dialog>` directly** — refines thesis. Even rich components get bypassed if the native primitive is simpler. Worth documenting: the model treats _platform primitives_ as a separate consumption layer beneath the design system.
-
-3. **AI uses Radix Dialog instead** — surfaces training-data preference. Suggests Radix is so well-known that models default to it for any modal need. Worth documenting as a training-data bias.
-
-4. **AI reimplements like with Card** — disconfirms thesis. Substantial finding. Would suggest reimplementation is the model's default behavior regardless of component complexity, and Day 21's Input pass was an outlier (perhaps because Input is harder to reimplement _and_ small enough that the model didn't try).
-
-Any of these four results is publishable case study material. The thesis being tested directly is the strongest possible position for Day 28.
-
-**Time estimate for Day 28:** ~60-75 min total.
+**Time estimate:** ~45 min.
 
 ---
 
 ## Open questions / parking lot
 
-- **Bidirectional Figma sync (Phase 4 candidate):** flagged Day 22, made concrete by Day 24 shadow incident.
+- **Bidirectional Figma sync (Phase 4 candidate):** flagged Day 22, concretized Day 24.
 - **Popover (non-modal):** deferred from Day 26.
 - **Dark-mode-aware shadows:** v0.1 ships single-mode.
 - **FormField component:** referenced in Input spec, not built.
 - **Multi-framework consumption (Vue, Svelte):** still parked.
-- **Scale test:** Day 25 partial (3 instances); larger test still parked.
-- **Other AI editors:** Cursor, Aider, Copilot. Unverified.
+- **Scale test:** Day 25 partial.
+- **Other AI editors:** Cursor, Aider, Copilot.
 - **Code cleanup:** dead files from earlier iterations.
 
 ---
@@ -231,16 +213,17 @@ Any of these four results is publishable case study material. The thesis being t
 - **Variant (component-level)** — visual treatment a component supports
 - **State modifier** — token suffix (`-hover`, `-active`)
 - **Subcomponent** — component accessed via dot notation; first-class system entity
-- **Compound component pattern** — React pattern where subcomponents are properties of a parent. Two flavors used in the system: children-inspection (Input, Card) and context-based (Dialog).
+- **Compound component pattern** — React pattern where subcomponents are properties of a parent. Two flavors used: children-inspection (Input, Card) and context-based (Dialog).
 - **Effect style (Figma)** — Figma's term for styled effects like drop shadows.
 - **AUTHORED_CORE_TOKENS** — block in `scripts/normalize-tokens.ts` for tokens Figma can't express.
 - **`.llm.md`** — per-component AI-optimized documentation
 - **Static API** — `public/api/components.json`
-- **Abstraction preservation** — earlier thesis (Day 18). Refined Days 24-25.
-- **Reimplementation cost** — current load-bearing layer. AI consumes when reimplementation is expensive; reimplements when it's cheap.
-- **Native `<dialog>`** — HTML element with `showModal()` API. Used by Dialog as foundation.
-- **DialogContext** — React Context shared between Dialog and its subcomponents for ARIA ID wiring.
+- **Abstraction preservation** — early thesis (Day 18). Refined Day 25.
+- **Reimplementation cost** — Day 25 thesis. Refuted Day 28.
+- **Perceived availability** — Day 28 thesis. AI consumes when it can see the component as a callable artifact; reimplements when it can't.
+- **DialogContext** — React Context shared between Dialog and its subcomponents.
+- **Intervention test** — Day 29 experiment: add import info to `.llm.md`, see if consumption appears.
 
 ---
 
-_Last updated: end of Day 27. Dialog implementation shipped. The thesis test (Day 28) is set up against the richest component in the system. Six of eleven components shipped, on track for Phase 3 completion._
+_Last updated: end of Day 28. Most consequential AI test of the project completed. Thesis refined a third time. Day 29 has a clear, testable intervention queued. Case study writing chat has been fully updated._
