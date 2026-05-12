@@ -3,10 +3,47 @@ import { Badge } from '../../components/badge/badge'
 import { Button } from '../../components/button/button'
 import { Input } from '../../components/input/input'
 import { Card } from '../../components/card/card'
+import { Dialog } from '../../components/dialog/dialog'
+
+function DialogControlledExample() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <>
+      <Button palette="primary" variant="solid" onClick={() => setOpen(true)}>
+        Edit profile
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog.Title>Edit your profile</Dialog.Title>
+        <Dialog.Body>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div>
+              <label style={{ fontSize: 13, color: 'var(--color-common-fg-muted)' }}>Name</label>
+              <Input defaultValue="Goran Tomicic" />
+            </div>
+            <div>
+              <label style={{ fontSize: 13, color: 'var(--color-common-fg-muted)' }}>Bio</label>
+              <Input defaultValue="Designer" />
+            </div>
+          </div>
+        </Dialog.Body>
+        <Dialog.Footer>
+          <Button palette="neutral" variant="subtle" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button palette="primary" variant="solid" onClick={() => setOpen(false)}>
+            Save changes
+          </Button>
+        </Dialog.Footer>
+      </Dialog>
+    </>
+  )
+}
 
 export function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
   const [loading, setLoading] = useState(false)
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -215,6 +252,82 @@ export function App() {
             <Card.Body><p>This Card renders as &lt;aside&gt; — useful for related-but-tangential content.</p></Card.Body>
           </Card>
         </div>
+      </section>
+
+      <section className="section">
+        <h2>Dialog — destructive confirmation (uncontrolled with Trigger)</h2>
+        <Dialog>
+          <Dialog.Trigger asChild>
+            <Button palette="danger" variant="solid">Delete account</Button>
+          </Dialog.Trigger>
+          <Dialog.Title>Delete your account?</Dialog.Title>
+          <Dialog.Description>
+            This action is permanent and cannot be undone. Your projects, files, and collaborator access will be removed.
+          </Dialog.Description>
+          <Dialog.Footer>
+            <Button palette="neutral" variant="subtle">Cancel</Button>
+            <Button palette="danger" variant="solid">Delete account</Button>
+          </Dialog.Footer>
+        </Dialog>
+      </section>
+
+      <section className="section">
+        <h2>Dialog — form (controlled)</h2>
+        <DialogControlledExample />
+      </section>
+
+      <section className="section">
+        <h2>Dialog — sizes</h2>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Dialog size="sm">
+            <Dialog.Trigger asChild>
+              <Button palette="neutral" variant="subtle">Small</Button>
+            </Dialog.Trigger>
+            <Dialog.Title>Small dialog</Dialog.Title>
+            <Dialog.Description>Max-width 400px. Good for confirmations.</Dialog.Description>
+            <Dialog.Footer>
+              <Button palette="primary" variant="solid">OK</Button>
+            </Dialog.Footer>
+          </Dialog>
+
+          <Dialog size="md">
+            <Dialog.Trigger asChild>
+              <Button palette="neutral" variant="subtle">Medium</Button>
+            </Dialog.Trigger>
+            <Dialog.Title>Medium dialog</Dialog.Title>
+            <Dialog.Description>Max-width 560px. Default for most forms.</Dialog.Description>
+            <Dialog.Footer>
+              <Button palette="primary" variant="solid">OK</Button>
+            </Dialog.Footer>
+          </Dialog>
+
+          <Dialog size="lg">
+            <Dialog.Trigger asChild>
+              <Button palette="neutral" variant="subtle">Large</Button>
+            </Dialog.Trigger>
+            <Dialog.Title>Large dialog</Dialog.Title>
+            <Dialog.Description>Max-width 720px. Use for complex content.</Dialog.Description>
+            <Dialog.Footer>
+              <Button palette="primary" variant="solid">OK</Button>
+            </Dialog.Footer>
+          </Dialog>
+        </div>
+      </section>
+
+      <section className="section">
+        <h2>Dialog — no backdrop close, no escape close</h2>
+        <Dialog closeOnBackdropClick={false} closeOnEscape={false}>
+          <Dialog.Trigger asChild>
+            <Button palette="neutral" variant="subtle">Open locked dialog</Button>
+          </Dialog.Trigger>
+          <Dialog.Title>Must acknowledge</Dialog.Title>
+          <Dialog.Description>
+            This dialog can only be closed via the button below. Backdrop click and Escape are disabled. This pattern is for must-acknowledge gates (terms of service, mandatory consent).
+          </Dialog.Description>
+          <Dialog.Footer>
+            <Button palette="primary" variant="solid">I acknowledge</Button>
+          </Dialog.Footer>
+        </Dialog>
       </section>
 
     </div>
