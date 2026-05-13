@@ -2,6 +2,14 @@
 
 Indicates ongoing background activity. Inherits color from parent via currentColor — meant to be embedded in components like Button (loading state) or used standalone for fetch indicators. For full-page or section loading, use Skeleton instead.
 
+## Import
+
+```jsx
+import { Spinner } from '@ai-native-ds/spinner'
+```
+
+This component is part of the ai-native-ds package and is available as a callable React component.
+
 ## Usage
 
 ```jsx

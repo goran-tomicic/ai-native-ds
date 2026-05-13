@@ -2,6 +2,14 @@
 
 A small visual label used to annotate or call out a status, count, or category. For interactive states or filtering, use Tag. For user-generated labels, use Chip.
 
+## Import
+
+```jsx
+import { Badge } from '@ai-native-ds/badge'
+```
+
+This component is part of the ai-native-ds package and is available as a callable React component.
+
 ## Usage
 
 ```jsx

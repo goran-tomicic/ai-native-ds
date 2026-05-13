@@ -2,6 +2,14 @@
 
 Triggers an action. Use for: submitting forms, confirming dialogs, opening menus, primary actions in views. Not for navigation between pages — use Link. Not for binary toggles — use ToggleButton.
 
+## Import
+
+```jsx
+import { Button } from '@ai-native-ds/button'
+```
+
+This component is part of the ai-native-ds package and is available as a callable React component.
+
 ## Usage
 
 ```jsx

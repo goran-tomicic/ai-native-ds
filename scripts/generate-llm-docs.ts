@@ -84,6 +84,17 @@ function generateLlmMd(spec: Spec): string {
   lines.push(spec.description)
   lines.push('')
 
+  // Import section — tells the model how to consume the component
+  // (Day 29 intervention: perceived-availability thesis test)
+  lines.push('## Import')
+  lines.push('')
+  lines.push('```jsx')
+  lines.push(`import { ${spec.name} } from '@ai-native-ds/${spec.name.toLowerCase()}'`)
+  lines.push('```')
+  lines.push('')
+  lines.push(`This component is part of the ai-native-ds package and is available as a callable React component.`)
+  lines.push('')
+
   // Usage — lead with JSX example so model anchors on consumption pattern
   const firstExample = spec.examples?.[0]
   if (firstExample) {

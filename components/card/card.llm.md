@@ -2,6 +2,14 @@
 
 Container for grouped content. Composes with Card.Header, Card.Body, Card.Footer subcomponents to create structured layouts. Card is structurally neutral — the content within carries intent (use Badge, callout patterns, etc. for emphasis). The variant prop controls visual elevation; the padding prop sets uniform rhythm across all subcomponents.
 
+## Import
+
+```jsx
+import { Card } from '@ai-native-ds/card'
+```
+
+This component is part of the ai-native-ds package and is available as a callable React component.
+
 ## Usage
 
 ```jsx

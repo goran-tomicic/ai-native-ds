@@ -1,7 +1,7 @@
 {
   "$schema": "https://github.com/goran-tomicic/ai-native-ds/blob/main/schemas/component.schema.json",
   "version": "0.1.0",
-  "generatedAt": "2026-05-11T21:19:29.506Z",
+  "generatedAt": "2026-05-13T19:48:58.456Z",
   "overview": {
     "name": "ai-native-ds",
     "description": "Design system built for AI agents as first-class consumers.",

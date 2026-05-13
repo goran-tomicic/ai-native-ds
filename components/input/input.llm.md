@@ -2,6 +2,14 @@
 
 Single-line text input. Composes with FormField for label/helper/error layout, and with Input.LeadingIcon / Input.TrailingIcon for adornments. Type-agnostic at this version: text only. Future: email, password, number, tel, etc.
 
+## Import
+
+```jsx
+import { Input } from '@ai-native-ds/input'
+```
+
+This component is part of the ai-native-ds package and is available as a callable React component.
+
 ## Usage
 
 ```jsx

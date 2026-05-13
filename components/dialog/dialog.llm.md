@@ -2,6 +2,14 @@
 
 Modal dialog. Built on the native HTML <dialog> element with showModal() semantics: focus trap, escape-to-close, and top-layer rendering handled by the browser. Composes with Dialog.Title (required for accessibility), Dialog.Description (optional but recommended), Dialog.Body, Dialog.Footer, and Dialog.Trigger. For non-modal floating content, use Popover (separate component, future).
 
+## Import
+
+```jsx
+import { Dialog } from '@ai-native-ds/dialog'
+```
+
+This component is part of the ai-native-ds package and is available as a callable React component.
+
 ## Usage
 
 ```jsx

@@ -11,22 +11,20 @@
 
 Most design systems are documented for humans. But increasingly, the consumer is a program — an LLM generating UI, an agent composing components, a code assistant picking tokens.
 
-**Current thesis (after Day 28):** AI consumption of design system components is determined not by the cost of reimplementation, but by the model's perception of whether the component is available as a callable artifact. With spec alone, models reimplement regardless of complexity. With runtime context (codebase access, import paths, package registry), models consume.
-
-**Concrete intervention identified:** Add explicit import information to every `.llm.md` file. The hypothesis can be tested directly on Day 29.
+**Final thesis (Day 29, experimentally confirmed):** AI consumption of design system components is determined by perceived availability of the component as a callable artifact. Documentation alone (`.llm.md` with spec) is insufficient — the model treats it as a contract to implement. Adding a single import statement to the documentation changes the signal: the model treats the component as available and uses it via import rather than rebuilding it. Confirmed by single-variable experimental intervention.
 
 ---
 
 ## Project arc
 
-| Phase                           | Days           | Focus                                                 | Status         |
-| ------------------------------- | -------------- | ----------------------------------------------------- | -------------- |
-| Phase 1 — build                 | Days 1–10      | Build the system, run tests, refine thesis            | ✅ Done        |
-| Phase 1.5 — refinement          | Days 11, 17–18 | Conventions cleanup, v4 experiment                    | ✅ Done        |
-| Phase 2 — case study writing    | Writing chat   | Long-form post + case study page + video              | 🟡 In progress |
-| Phase 3 — finish original scope | Days 19+       | Build remaining components from original 10-week plan | 🟡 In progress |
+| Phase                                                 | Days           | Focus                                                  | Status         |
+| ----------------------------------------------------- | -------------- | ------------------------------------------------------ | -------------- |
+| Phase 1 — build                                       | Days 1–10      | Build the system, run tests, refine thesis             | ✅ Done        |
+| Phase 1.5 — refinement                                | Days 11, 17–18 | Conventions cleanup, v4 experiment                     | ✅ Done        |
+| Phase 2 — case study writing                          | Writing chat   | Long-form post + case study page + video               | 🟡 In progress |
+| Phase 3 — finish original scope + thesis confirmation | Days 19+       | Build remaining components + experimental confirmation | 🟡 In progress |
 
-Phase 3 progress: 6 of 11 originally-planned components fully shipped. Plus Day 28 produced the most consequential thesis refinement of the entire project. Phase 3 remaining: Day 29 intervention test, then 4-5 more components from original scope, then pipeline hardening.
+Phase 3 progress: 6 of 11 originally-planned components fully shipped. The thesis test was concluded Day 28-29 with experimental confirmation. Phase 3 remaining: 4-5 more components for original scope, optional intervention generalization tests, pipeline hardening.
 
 ---
 
@@ -37,15 +35,16 @@ Phase 3 progress: 6 of 11 originally-planned components fully shipped. Plus Day 
 - React + TypeScript + Tailwind v3.4 + cva + Radix primitives where helpful
 - DTCG token format, mode-aware via Style Dictionary
 - Three-layer token architecture (core + semantic/common + semantic/palette)
-- Token sources are bifurcated: Figma Variables for what Figma supports; `AUTHORED_CORE_TOKENS` for what it doesn't
+- Token sources bifurcated: Figma Variables + `AUTHORED_CORE_TOKENS` block
 - Disabled state via opacity + pointer-events, palette-agnostic
-- AI consumption surfaces: llms.txt, .llm.md, static API JSON, MCP server
+- AI consumption surfaces: llms.txt, .llm.md (with `## Import` section as of Day 29), static API JSON, MCP server
 - Single source of truth for conventions: `docs/system-meta.json`
 - Component prop naming: `palette` for intent, `variant` for visual treatment
 - Subcomponents as first-class entities: `Component.SubcomponentName`
 - Component schema does not require `accessibility.role`
 - Overlay components use native browser primitives where viable
 - Context-based ARIA wiring for compound components with required accessibility associations
+- **`.llm.md` files include an `## Import` section as the second section** (Day 29 confirmed this is the critical signal)
 - Public repo, commit history is part of the artifact
 
 ### Editorial (writing chat)
@@ -64,137 +63,157 @@ Foundations, tokens, components (Badge, Button, Spinner), AI consumption layer, 
 
 ### Day 19 ✅ Architectural cleanup + Input spec
 
-Renamed `style` → `variant`. Schema upgrade for subcomponents.
-
 ### Day 20 ✅ Input implementation
-
-cva matrix, compound subcomponents via children inspection.
 
 ### Day 21 ✅ Input playground + first compound component AI test
 
-AI test passed. Compound API consumption confirmed.
+AI test passed; compound API consumption confirmed.
 
 ### Day 22 ✅ Card spec + schema relaxation
 
-Three variants, three subcomponents, uniform padding.
-
 ### Day 23 ✅ Card implementation
-
-cva matrix, three compound subcomponents, polymorphic `as` prop.
 
 ### Day 24 ✅ Card playground + AI Test #1 + shadow pipeline fix
 
-Shadow pipeline fixed via `AUTHORED_CORE_TOKENS`. AI Test #1 surfaced reimplementation regression.
+AI Test #1 surfaced reimplementation regression.
 
 ### Day 25 ✅ AI Test #2 + writing chat handoff
 
-Reimplementation pattern confirmed at scale. Thesis refined: abstraction preservation has a reimplementation-cost boundary.
+Reimplementation pattern confirmed at scale. Thesis refined: reimplementation-cost boundary hypothesis.
 
 ### Day 26 ✅ Dialog spec
 
-~350 lines. Most complex spec in the system. Native `<dialog>` foundation, 5 subcomponents.
+Most complex spec in system. Native `<dialog>` foundation.
 
 ### Day 27 ✅ Dialog implementation
 
-~200 lines. React wrapper around native `<dialog>`, context-based ARIA wiring, displayName-based Trigger separation.
+Context-based ARIA wiring established as new pattern.
 
-### Day 28 ✅ Dialog playground + AI consumption test (the thesis test)
+### Day 28 ✅ Dialog playground + AI test
 
-**The most consequential AI test of the entire project.**
+Dialog reimplemented despite high complexity. Day 25 thesis refuted. Refined to perceived-availability thesis. Concrete intervention identified.
 
-**Playground integration:**
+### Day 29 ✅ Intervention test — perceived-availability thesis confirmed
 
-- Destructive confirmation (uncontrolled with Dialog.Trigger)
-- Controlled form dialog (open/onOpenChange managed externally)
-- Three sizes (sm/md/lg) demonstrating max-width scale
-- Locked dialog (closeOnBackdropClick=false, closeOnEscape=false)
-- All visual checks passed in both modes
+**The most consequential single experiment of the project.**
 
-**AI consumption test:**
+**The intervention:**
 
-Fresh Claude.ai, only `dialog.llm.md` pasted. Same prompt as Day 8 Test 2 and Day 24 Test #1 — destructive confirmation dialog. Third time this exact prompt has been run, this time at peak system maturity.
+Added `## Import` section to `scripts/generate-llm-docs.ts`. Every component's `.llm.md` now includes (after title/description, before usage):
 
-**Result: reimplementation, but with explicit awareness.**
+````markdown
+## Import
 
-The model produced ~250 lines reimplementing the entire design system locally. No imports. Everything defined as shims. But unlike Day 24's silent reimplementation, the model explicitly stated:
+```jsx
+import { Dialog } from "@ai-native-ds/dialog";
+```
+````
 
-> _"Primitive shims (replace with real DS imports in production) — the spec defines a component API but ships no implementation. I wrote minimal Button and Dialog shims inline. In production these would be real DS imports."_
+This component is part of the ai-native-ds package and is available as a callable React component.
 
-The reimplementation was a conscious choice the model articulated, not a default behavior.
+```
 
-**What this refutes:** Day 25's reimplementation-cost thesis. Dialog is the richest component in the system. The thesis predicted consumption. Reality was reimplementation. So cost wasn't the variable.
+**Critical design choice:** factual framing only, no prescriptive language. If consumption appeared with just this signal, the thesis would be confirmed at the strongest possible level.
 
-**Refined thesis (v7):**
+**The test:**
 
-> _AI consumption of design system components is determined not by the cost of reimplementation, but by the model's perception of whether the component is available as a callable artifact. With spec alone (`.llm.md`), models reimplement regardless of complexity. With runtime context (codebase access, import paths, package registry), models consume._
+Fresh Claude.ai conversation. Same exact Day 28 prompt (destructive confirmation dialog). Only `dialog.llm.md` pasted (with the new Import section). No other context.
 
-**What explains all the data:**
+**The result:**
 
-- Day 21 (Input, `.llm.md` only) → consumed (model didn't think hard about implementation)
-- Day 24 (Card, `.llm.md` only) → reimplemented silently (implementation easy, no awareness needed)
-- Day 28 (Dialog, `.llm.md` only) → reimplemented with explicit awareness (implementation forced the choice into consciousness)
-- Day 10c (Button, Claude Code with codebase) → consumed (codebase access provided import visibility)
+Clean consumption. Model output ~30 lines using `import { Dialog }` and `import { Button }`. No reimplementation. No shims. Components used as imported.
 
-The variable that explains all four: **does the model have visibility into where the component lives?**
+**Day 28 vs Day 29 comparison:**
 
-**Secondary finding — spec adherence remained perfect.** The reimplementation honored 11 out of 11 spec rules tested. The spec is the load-bearing artifact; consume vs. reimplement affects code reuse, not output correctness. This is a positive finding for design systems: a good spec ensures correctness whether AI consumes or reimplements.
+| Variable | Day 28 | Day 29 |
+|---|---|---|
+| Prompt | Same | Same |
+| Model | Fresh Claude.ai | Fresh Claude.ai |
+| Context | `dialog.llm.md` only | `dialog.llm.md` only (with `## Import`) |
+| Output length | ~250 lines | ~30 lines |
+| Reimplementation | Yes | No |
+| Component imports | None | Both Dialog and Button |
+| Spec adherence | 11/11 rules | 9/9 rules |
+| Output correctness | Correct per spec | Correct per spec |
 
-**Concrete intervention identified:** Add import information to `.llm.md` files. If the model sees `import { Dialog } from '@ai-native-ds/dialog'` (or equivalent) at the top of the spec, the perceived-availability variable changes. Day 29 will test this directly.
+Single variable changed. Behavior change is complete. ~88% reduction in output size. The intervention is one section of one file. The effect is total.
+
+**Notable secondary finding — pattern extrapolation:**
+
+The model output imported Button as `'@ai-native-ds/button'`, extrapolating the pattern from Dialog's import (`'@ai-native-ds/dialog'`). The model treated the import format as a system-wide convention it could infer. This suggests:
+
+1. The intervention is more efficient than expected (one example signals the system pattern)
+2. The model reasons about the design system at the system level, not just component-by-component
+3. For safety, the intervention should still be applied to every component (don't rely on extrapolation)
+
+**Final thesis (v8):**
+
+> *AI consumption of design system components is determined by perceived availability of the component as a callable artifact. Documentation alone is insufficient — the model treats it as a contract to implement, not a library to consume. Adding a single import statement changes the signal: the model treats the component as available and uses it via import. Confirmed by experimental intervention: same prompt, same model, single variable change, dramatic behavioral shift from reimplementation to consumption.*
+
+**The thesis arc is now complete:**
+
+- v1 Documentation alone insufficient (Day 8)
+- v2 Better documentation insufficient (Day 9)
+- v3 Packaging insufficient in mismatched runtime (Day 10b)
+- v4 Runtime alignment (Day 10c) — partial
+- v5 Abstraction preservation (Day 18)
+- v6 Reimplementation-cost boundary (Days 24-25)
+- v7 Perceived availability of callable artifact (Day 28 — hypothesis)
+- v8 Perceived availability signaled by import information (Day 29 — confirmed by intervention)
+
+The arc has proper experimental structure: observation → refinement → ... → hypothesis → intervention → confirmation. The case study now has empirically-grounded advice, not just observational claims.
 
 **Practitioner advice now possible:**
 
-> _"For AI to consume your design system, the spec alone isn't enough. The AI needs information about where the component lives — import path, package name, or codebase context. Without that, AI defaults to reimplementation regardless of component complexity. Add a 'Usage' or 'Import' section to your AI-facing documentation: `import { Dialog } from '@your-org/design-system'`. This single line is what bridges the gap between 'AI knows how the component should work' and 'AI uses the component you wrote.'"_
-
-This is concrete, testable, actionable. Strongest practitioner advice in the project.
-
-**Severity for case study:** Highest of the entire project. Day 28 produces a third thesis refinement, concrete actionable advice, and a clean intervention to test on Day 29. The thesis arc is now substantively complete — seven iterations, each grounded in data, ending in a specific recommendation practitioners can implement.
+> "Add an `## Import` section to every `.llm.md` file in your AI-facing documentation. Format: single import statement showing the canonical import path. State factually that the component is available as a callable artifact. Don't add prescriptive language — the import signal alone is sufficient."
 
 **Artifacts:**
+- `scripts/generate-llm-docs.ts` — `## Import` section added to all generated `.llm.md` files
+- `components/*/*.llm.md` — regenerated with Import sections
+- `docs/demo-day/day-29-intervention-test.md` — full analysis with single-variable comparison
+- Substantial handoff sent to writing chat (Section 5, 7, 8 updates)
 
-- `playground/src/App.tsx` — Dialog sections added
-- `docs/demo-day/day-28-dialog-test.md` — full test analysis
-- Substantial handoff sent to writing chat (Section 5, 7, 8 implications)
-- Two commits pushed
+**Severity for case study:** Highest of the entire project. Day 28 identified the hypothesis; Day 29 confirmed it. The thesis arc has structure: observation → hypothesis → intervention → confirmation. This is closer to proper experimental method than any prior beat. Concrete, empirically-grounded advice can ship in the case study.
 
 ---
 
-### Day 29 🟡 Planned — Intervention test (the perceived-availability hypothesis)
+### Day 30 🟡 Planned — direction TBD
 
-**The most testable hypothesis of the project.** Add explicit import information to `dialog.llm.md`, re-run the exact same prompt, observe whether consumption appears.
+**Two real paths to choose between:**
 
-**Two parts:**
+**Path A — Continue thesis generalization (~30-60 min)**
 
-1. **Modify `dialog.llm.md`** (~10 min)
-   - Add a "## Usage" or "## Import" section near the top
-   - Include: `import { Dialog } from '@ai-native-ds/dialog'` (or similar import string)
-   - Possibly add: a brief "How to use this" sentence framing the import as required
+Test the Day 29 intervention on a previously-failed component. Card (Day 24) is the obvious candidate — re-running the Card test with the intervention would confirm the thesis works on a component where reimplementation was the original failure mode, not just where the hypothesis was formed.
 
-2. **Re-run the Day 28 prompt** (~30 min)
-   - Fresh Claude.ai conversation
-   - Same exact prompt as Day 28
-   - Capture full output
-   - Compare: does the model now import Dialog, or does it still reimplement?
+Pros: strongest possible empirical foundation, additional Section 5 evidence.
+Cons: not strictly necessary; Day 29's Dialog result is already a clean confirmation.
 
-**Possible outcomes:**
+**Path B — Continue building toward original 10-week scope (~60-120 min)**
 
-- **Model consumes** → thesis confirmed with concrete intervention. The case study now has a fix that practitioners can apply.
-- **Model still reimplements** → thesis needs further refinement. Maybe `.llm.md` isn't enough even with import info; maybe the runtime context (codebase access, actual file existence) is what matters. Worth investigating: does the model recognize the import path as "real" or treat it as fictional?
-- **Model imports but breaks differently** → surfaces a new failure mode. Possibly the model imports correctly but mis-uses the API in a way it didn't when reimplementing (because reimplementation forced explicit attention to the contract).
+Pick next component from the original Weeks 6-7 list. Options:
+- Checkbox + Radio + Switch (form controls, ~6 hr total)
+- Tabs (~3 hr)
+- Tooltip (~2 hr)
+- Toast (would close the Day 8 Test 5 gap — interesting case study tie-in)
+- Select (form completion pair with Input)
 
-All three outcomes are publishable. The intervention test makes the case study end on confirmed advice rather than open question.
+Pros: makes progress toward original scope; project log shows 6/11 components shipped, 4-5 more to go.
+Cons: doesn't strengthen the thesis arc further (which is already strong).
 
-**Time estimate:** ~45 min.
+Decision next session based on energy and priority. The thesis work is complete; the component work is incremental.
 
 ---
 
 ## Open questions / parking lot
 
+- **Generalization of Day 29 intervention:** Card re-test queued (Path A above). Other components untested with intervention.
+- **MCP-mediated context:** Day 18 showed Claude Desktop behavior differs from Claude.ai chat. Intervention should be re-tested in MCP context.
+- **Real vs. plausible import paths:** Package `@ai-native-ds/dialog` doesn't exist on npm. Model trusted the signal. Worth noting in case study.
 - **Bidirectional Figma sync (Phase 4 candidate):** flagged Day 22, concretized Day 24.
 - **Popover (non-modal):** deferred from Day 26.
 - **Dark-mode-aware shadows:** v0.1 ships single-mode.
 - **FormField component:** referenced in Input spec, not built.
 - **Multi-framework consumption (Vue, Svelte):** still parked.
-- **Scale test:** Day 25 partial.
 - **Other AI editors:** Cursor, Aider, Copilot.
 - **Code cleanup:** dead files from earlier iterations.
 
@@ -213,17 +232,19 @@ All three outcomes are publishable. The intervention test makes the case study e
 - **Variant (component-level)** — visual treatment a component supports
 - **State modifier** — token suffix (`-hover`, `-active`)
 - **Subcomponent** — component accessed via dot notation; first-class system entity
-- **Compound component pattern** — React pattern where subcomponents are properties of a parent. Two flavors used: children-inspection (Input, Card) and context-based (Dialog).
-- **Effect style (Figma)** — Figma's term for styled effects like drop shadows.
-- **AUTHORED_CORE_TOKENS** — block in `scripts/normalize-tokens.ts` for tokens Figma can't express.
-- **`.llm.md`** — per-component AI-optimized documentation
+- **Compound component pattern** — React pattern; two flavors used: children-inspection (Input, Card) and context-based (Dialog)
+- **Effect style (Figma)** — Figma's term for styled effects like drop shadows
+- **AUTHORED_CORE_TOKENS** — block in `scripts/normalize-tokens.ts` for tokens Figma can't express
+- **`.llm.md`** — per-component AI-optimized documentation, structured for LLM consumption
+- **`## Import` section** — required section in all `.llm.md` files as of Day 29. Provides the canonical import statement, signaling the component is available as a callable artifact
 - **Static API** — `public/api/components.json`
-- **Abstraction preservation** — early thesis (Day 18). Refined Day 25.
+- **Abstraction preservation** — early thesis (Day 18). Refined Days 24-25.
 - **Reimplementation cost** — Day 25 thesis. Refuted Day 28.
-- **Perceived availability** — Day 28 thesis. AI consumes when it can see the component as a callable artifact; reimplements when it can't.
-- **DialogContext** — React Context shared between Dialog and its subcomponents.
-- **Intervention test** — Day 29 experiment: add import info to `.llm.md`, see if consumption appears.
+- **Perceived availability** — Day 28 thesis. Confirmed by Day 29 intervention.
+- **Intervention test** — Day 29 experimental method: change a single variable in the spec, observe behavior change. Proper experimental design with pre-registered hypothesis and single-variable manipulation.
+- **DialogContext** — React Context shared between Dialog and its subcomponents
 
 ---
 
-_Last updated: end of Day 28. Most consequential AI test of the project completed. Thesis refined a third time. Day 29 has a clear, testable intervention queued. Case study writing chat has been fully updated._
+_Last updated: end of Day 29. Thesis confirmed by experimental intervention. The case study has its empirically-grounded conclusion. Phase 3 component work continues from Day 30._
+```
