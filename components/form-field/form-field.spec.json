@@ -1,0 +1,221 @@
+{
+  "$schema": "../../schemas/component.schema.json",
+  "name": "FormField",
+  "version": "0.1.0",
+  "status": "experimental",
+  "category": "form",
+  "description": "Layout wrapper for form controls. Provides label, helper text, error message, and required indicator with correct ARIA wiring. Auto-generates ID and htmlFor association via React Context so consumers don't have to manage them manually. Compose with Input, Checkbox, Radio, Switch, Select, or any form control as its single inner control child.",
+
+  "props": {
+    "required": {
+      "type": "boolean",
+      "default": false,
+      "description": "Marks the field as required. Renders a visual indicator next to the label. Does not enforce validation — that's the inner control's job. Use for visual signaling that the field must be filled."
+    },
+    "invalid": {
+      "type": "boolean",
+      "default": false,
+      "description": "Marks the field as having a validation error. Consumers typically set this when FormField.Error is also being rendered. Used to propagate state to the inner control (e.g., Input renders with state='error' when its FormField is invalid)."
+    },
+    "id": {
+      "type": "string",
+      "optional": true,
+      "description": "Override the auto-generated ID. Use this when the field needs to be referenced from elsewhere (e.g., from an aria-controls relationship on another component). If omitted, FormField generates a unique ID via useId()."
+    }
+  },
+
+  "states": ["default", "invalid", "required"],
+
+  "tokens": {
+    "shared": {
+      "gap":              "space.1",
+      "label_color":      "color.common.fg.strong",
+      "label_size":       "14px",
+      "label_weight":     "500",
+      "helper_color":     "color.common.fg.muted",
+      "helper_size":      "13px",
+      "error_color":      "color.palette.danger.bold",
+      "error_size":       "13px",
+      "required_color":   "color.palette.danger.base",
+      "required_size":    "14px"
+    }
+  },
+
+  "accessibility": {
+    "requirements": [
+      "FormField.Label must be associated with the inner control via htmlFor/id. Auto-wired via context.",
+      "FormField.Error should be announced when it appears — uses aria-live='polite' and is referenced by aria-describedby on the inner control.",
+      "FormField.Helper is non-critical context, referenced by aria-describedby on the inner control.",
+      "The required indicator is visual only — for screen reader announcement, the inner control must also have aria-required='true' (typically through its native required attribute).",
+      "The invalid prop maps to aria-invalid='true' on the inner control via context."
+    ]
+  },
+
+  "composition": {
+    "allowedChildren": ["FormField.Label", "FormField.Helper", "FormField.Error", "any form control (Input, Checkbox, Radio, Switch, Select)"],
+    "forbiddenChildren": ["FormField"],
+    "commonParents": ["form", "Dialog.Body", "Card.Body"],
+    "subcomponentOrdering": "FormField.Label first, then the control, then FormField.Helper or FormField.Error (or both). Label is required for accessibility. Helper and Error are optional but at least one is typical for form fields."
+  },
+
+  "subcomponents": [
+    {
+      "name": "FormField.Label",
+      "description": "Label for the form field. Automatically wires htmlFor to the inner control's ID. Renders the required indicator if FormField has required=true.",
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "description": "Label text. Keep it concise."
+        }
+      },
+      "rules": {
+        "do": [
+          "Phrase labels as nouns or short noun phrases: 'Email', 'Full name', 'Date of birth'",
+          "Place FormField.Label as the first child of FormField",
+          "Use sentence case unless system convention requires otherwise"
+        ],
+        "dont": [
+          "Don't include required indicator manually — FormField's required prop handles this",
+          "Don't include 'optional' as part of the label text — optional should be the default; mark required fields instead",
+          "Don't put long descriptions in the label — those belong in FormField.Helper"
+        ]
+      },
+      "examples": [
+        {
+          "name": "Basic label",
+          "code": "<FormField.Label>Email</FormField.Label>",
+          "context": "Standard form field label"
+        }
+      ]
+    },
+    {
+      "name": "FormField.Helper",
+      "description": "Helper text below the control. Provides context, format hints, or examples. Non-critical information that helps the user complete the field correctly.",
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "description": "Helper content. Typically one short sentence."
+        }
+      },
+      "rules": {
+        "do": [
+          "Use helper text for format examples ('e.g., name@company.com'), constraints ('Minimum 8 characters'), or context ('Visible to your team only')",
+          "Keep it short — one sentence",
+          "Render helper text below the control, above any error message"
+        ],
+        "dont": [
+          "Don't put error messages here — use FormField.Error",
+          "Don't repeat the label content",
+          "Don't render Helper and Error simultaneously for the same condition — Error replaces Helper when both are present"
+        ]
+      },
+      "examples": [
+        {
+          "name": "Format hint",
+          "code": "<FormField.Helper>Use a strong password with at least 12 characters.</FormField.Helper>",
+          "context": "Password field guidance"
+        }
+      ]
+    },
+    {
+      "name": "FormField.Error",
+      "description": "Error message below the control. Replaces helper text when present. Marked with aria-live so screen readers announce the error when it appears.",
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "description": "Error message. Specific and actionable — describe what's wrong and how to fix it."
+        }
+      },
+      "rules": {
+        "do": [
+          "Be specific: 'Email must include @' is better than 'Invalid email'",
+          "Suggest a fix when possible: 'Password too short — minimum 8 characters'",
+          "Render Error only when there's a real validation error — empty FormField.Error elements are noise",
+          "Pair FormField.Error with FormField invalid=true so the inner control also gets the error state"
+        ],
+        "dont": [
+          "Don't render generic errors like 'Required' — be specific about what's required and why",
+          "Don't render Error and Helper simultaneously — Error replaces Helper",
+          "Don't include the field name in the error if the label already shows it — 'Required' is redundant when the Email label already shows the field"
+        ]
+      },
+      "examples": [
+        {
+          "name": "Specific error",
+          "code": "<FormField.Error>Email must include an @ symbol.</FormField.Error>",
+          "context": "Email validation failure"
+        }
+      ]
+    }
+  ],
+
+  "rules": {
+    "do": [
+      "Wrap all form controls in FormField for consistent label/helper/error layout",
+      "Use FormField.Label as the first child — accessibility requires it",
+      "Set required=true and pair with FormField.Error when needed",
+      "Pair invalid=true with FormField.Error so the inner control's state reflects the validation",
+      "Let FormField auto-generate IDs — manual ID management is error-prone"
+    ],
+    "dont": [
+      "Don't render form controls without FormField unless the form is decorative or temporary",
+      "Don't manually set id/htmlFor — FormField handles this via context",
+      "Don't nest FormField inside FormField",
+      "Don't include label text inside the form control (e.g., Input's placeholder is not a label) — use FormField.Label",
+      "Don't render multiple form controls inside one FormField — one field per FormField"
+    ]
+  },
+
+  "examples": [
+    {
+      "name": "Basic input with label",
+      "code": "<FormField>\n  <FormField.Label>Email</FormField.Label>\n  <Input type=\"email\" />\n</FormField>",
+      "context": "Standard form field"
+    },
+    {
+      "name": "With helper text",
+      "code": "<FormField>\n  <FormField.Label>Password</FormField.Label>\n  <Input type=\"password\" />\n  <FormField.Helper>Minimum 8 characters with at least one number.</FormField.Helper>\n</FormField>",
+      "context": "Password field with format requirements"
+    },
+    {
+      "name": "Required field with error",
+      "code": "<FormField required invalid>\n  <FormField.Label>Full name</FormField.Label>\n  <Input value=\"\" />\n  <FormField.Error>Name is required.</FormField.Error>\n</FormField>",
+      "context": "Form submitted with empty required field"
+    },
+    {
+      "name": "With Checkbox",
+      "code": "<FormField>\n  <FormField.Label>Subscribe to newsletter</FormField.Label>\n  <Checkbox />\n  <FormField.Helper>You can unsubscribe at any time.</FormField.Helper>\n</FormField>",
+      "context": "Boolean opt-in (Checkbox composes the same way as Input)"
+    }
+  ],
+
+  "antiPatterns": [
+    {
+      "bad":  "<FormField>\n  <FormField.Label htmlFor=\"email\">Email *</FormField.Label>\n  <Input id=\"email\" />\n</FormField>",
+      "good": "<FormField required>\n  <FormField.Label>Email</FormField.Label>\n  <Input />\n</FormField>",
+      "why":  "Manual ID management is error-prone (forget one, screen readers silently fail). The * indicator for required should come from FormField's required prop, not manually appended to label text. Both are concerns FormField handles automatically."
+    },
+    {
+      "bad":  "<Input placeholder=\"Email address\" />",
+      "good": "<FormField>\n  <FormField.Label>Email address</FormField.Label>\n  <Input />\n</FormField>",
+      "why":  "Placeholders are not labels. They disappear when typing, fail screen reader requirements, and offer no accessible name. FormField provides the label correctly."
+    },
+    {
+      "bad":  "<FormField>\n  <FormField.Label>Search</FormField.Label>\n  <Input />\n  <FormField.Helper>Required field.</FormField.Helper>\n</FormField>",
+      "good": "<FormField required>\n  <FormField.Label>Search</FormField.Label>\n  <Input />\n</FormField>",
+      "why":  "'Required' in helper text duplicates what the required prop already signals visually. Use FormField's required prop and reserve Helper for actually-helpful information."
+    },
+    {
+      "bad":  "<FormField>\n  <FormField.Label>Sign me up</FormField.Label>\n  <Checkbox />\n  <Input placeholder=\"Email\" />\n</FormField>",
+      "good": "<>\n  <FormField>\n    <FormField.Label>Sign me up</FormField.Label>\n    <Checkbox />\n  </FormField>\n  <FormField>\n    <FormField.Label>Email</FormField.Label>\n    <Input />\n  </FormField>\n</>",
+      "why":  "FormField wraps one control. Two controls in one FormField breaks the label association (the label can only point to one ID) and confuses screen readers about what the field is."
+    }
+  ],
+
+  "related": {
+    "use_instead_when": [
+      { "component": "Fieldset", "when": "you need to group multiple related fields under one legend — not yet built" },
+      { "component": "RadioGroup", "when": "wrapping a set of Radio controls that share semantics — handled internally by Radio component" }
+    ]
+  }
+}

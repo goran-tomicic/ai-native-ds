@@ -26,6 +26,7 @@ For architecture reasoning:
 - Button — Triggers an action
 - Card — Container for grouped content
 - Dialog — Modal dialog
+- FormField — Layout wrapper for form controls
 - Input — Single-line text input
 - Spinner — Indicates ongoing background activity
 

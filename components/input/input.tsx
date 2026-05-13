@@ -1,5 +1,6 @@
 import { forwardRef, isValidElement, Children, type ReactNode, type InputHTMLAttributes } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
+import { useFormFieldContext } from '../form-field/form-field'
 
 // ─── Subcomponent — Input.LeadingIcon ────────────────────────────────────────
 
@@ -149,6 +150,18 @@ const InputBase = forwardRef<HTMLInputElement, InputProps>(
   ) => {
     const { leading, trailing } = extractIcons(children)
     const padding = getPaddingClasses(size ?? 'md', leading !== null, trailing !== null)
+    const formFieldCtx = useFormFieldContext()
+
+    // FormField context overrides props if present
+    const resolvedId = formFieldCtx?.id ?? rest.id
+    const resolvedState =
+      formFieldCtx?.invalid ? 'error' :
+      state
+    const ariaDescribedBy = [
+      formFieldCtx?.helperId,
+      formFieldCtx?.errorId,
+    ].filter(Boolean).join(' ') || undefined
+    const ariaInvalid = formFieldCtx?.invalid ? 'true' : undefined
 
     return (
       <div className="relative inline-flex w-full">
@@ -157,12 +170,15 @@ const InputBase = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           disabled={disabled}
           readOnly={readOnly}
+          {...rest}
+          id={resolvedId}
+          aria-describedby={ariaDescribedBy}
+          aria-invalid={ariaInvalid}
           className={[
-            input({ variant, state, size }),
+            input({ variant, state: resolvedState, size }),
             padding,
             className,
           ].filter(Boolean).join(' ')}
-          {...rest}
         />
         {trailing}
       </div>

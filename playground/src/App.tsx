@@ -4,6 +4,7 @@ import { Button } from '../../components/button/button'
 import { Input } from '../../components/input/input'
 import { Card } from '../../components/card/card'
 import { Dialog } from '../../components/dialog/dialog'
+import { FormField } from '../../components/form-field/form-field'
 
 function DialogControlledExample() {
   const [open, setOpen] = useState(false)
@@ -186,6 +187,40 @@ export function App() {
           <Input defaultValue="hello@example.com" state="success">
             <Input.TrailingIcon>✓</Input.TrailingIcon>
           </Input>
+        </div>
+      </section>
+
+      <section className="section">
+        <h2>FormField — basic composition</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: 400 }}>
+          <FormField>
+            <FormField.Label>Email</FormField.Label>
+            <Input type="email" placeholder="name@company.com" />
+          </FormField>
+
+          <FormField>
+            <FormField.Label>Password</FormField.Label>
+            <Input type="password" />
+            <FormField.Helper>Minimum 8 characters with at least one number.</FormField.Helper>
+          </FormField>
+
+          <FormField required>
+            <FormField.Label>Full name</FormField.Label>
+            <Input />
+            <FormField.Helper>Use your legal name as it appears on government ID.</FormField.Helper>
+          </FormField>
+
+          <FormField invalid>
+            <FormField.Label>Email</FormField.Label>
+            <Input type="email" defaultValue="invalid-email" />
+            <FormField.Error>Email must include an @ symbol.</FormField.Error>
+          </FormField>
+
+          <FormField required invalid>
+            <FormField.Label>Username</FormField.Label>
+            <Input />
+            <FormField.Error>Username is required.</FormField.Error>
+          </FormField>
         </div>
       </section>
 
