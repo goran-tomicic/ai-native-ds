@@ -25,10 +25,14 @@ For architecture reasoning:
 - Badge — A small visual label used to annotate or call out a status, count, or category
 - Button — Triggers an action
 - Card — Container for grouped content
+- Checkbox — Binary or tri-state checkbox built on native input[type=checkbox]
 - Dialog — Modal dialog
 - FormField — Layout wrapper for form controls
 - Input — Single-line text input
+- Radio — Single option within a mutually-exclusive group
+- RadioGroup — Container for a set of mutually-exclusive Radio options
 - Spinner — Indicates ongoing background activity
+- Switch — Toggle for a setting that takes immediate effect
 
 ## Token model (summary)
 

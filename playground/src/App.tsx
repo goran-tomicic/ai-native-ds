@@ -5,6 +5,10 @@ import { Input } from '../../components/input/input'
 import { Card } from '../../components/card/card'
 import { Dialog } from '../../components/dialog/dialog'
 import { FormField } from '../../components/form-field/form-field'
+import { Checkbox } from '../../components/checkbox/checkbox'
+import { Radio } from '../../components/radio/radio'
+import { RadioGroup } from '../../components/radio-group/radio-group'
+import { Switch } from '../../components/switch/switch'
 
 function DialogControlledExample() {
   const [open, setOpen] = useState(false)
@@ -38,6 +42,30 @@ function DialogControlledExample() {
         </Dialog.Footer>
       </Dialog>
     </>
+  )
+}
+
+function RadioGroupExample() {
+  const [plan, setPlan] = useState('free')
+  return (
+    <FormField>
+      <FormField.Label>Subscription plan</FormField.Label>
+      <RadioGroup name="plan" value={plan} onChange={setPlan}>
+        <FormField>
+          <FormField.Label>Free</FormField.Label>
+          <Radio value="free" />
+        </FormField>
+        <FormField>
+          <FormField.Label>Pro</FormField.Label>
+          <Radio value="pro" />
+        </FormField>
+        <FormField>
+          <FormField.Label>Enterprise</FormField.Label>
+          <Radio value="enterprise" />
+        </FormField>
+      </RadioGroup>
+      <FormField.Helper>Selected: {plan}</FormField.Helper>
+    </FormField>
   )
 }
 
@@ -363,6 +391,61 @@ export function App() {
             <Button palette="primary" variant="solid">I acknowledge</Button>
           </Dialog.Footer>
         </Dialog>
+      </section>
+
+      <section className="section">
+        <h2>Form controls — Checkbox</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <FormField>
+            <FormField.Label>Subscribe to newsletter</FormField.Label>
+            <Checkbox />
+          </FormField>
+          <FormField>
+            <FormField.Label>Pre-checked option</FormField.Label>
+            <Checkbox defaultChecked />
+          </FormField>
+          <FormField>
+            <FormField.Label>Indeterminate</FormField.Label>
+            <Checkbox indeterminate />
+          </FormField>
+          <FormField>
+            <FormField.Label>Disabled</FormField.Label>
+            <Checkbox disabled />
+          </FormField>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <Checkbox size="sm" defaultChecked />
+            <Checkbox size="md" defaultChecked />
+            <Checkbox size="lg" defaultChecked />
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <h2>Form controls — RadioGroup</h2>
+        <RadioGroupExample />
+      </section>
+
+      <section className="section">
+        <h2>Form controls — Switch</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <FormField>
+            <FormField.Label>Email notifications</FormField.Label>
+            <Switch defaultChecked />
+          </FormField>
+          <FormField>
+            <FormField.Label>Dark mode (off)</FormField.Label>
+            <Switch />
+          </FormField>
+          <FormField>
+            <FormField.Label>Disabled switch</FormField.Label>
+            <Switch disabled defaultChecked />
+          </FormField>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <Switch size="sm" defaultChecked />
+            <Switch size="md" defaultChecked />
+            <Switch size="lg" defaultChecked />
+          </div>
+        </div>
       </section>
 
     </div>
