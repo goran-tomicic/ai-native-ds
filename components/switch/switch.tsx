@@ -12,7 +12,7 @@ const switchTrack = cva(
     'shrink-0',
     'relative',
     'rounded-full',
-    'bg-border-base',
+    'bg-neutral-muted',
     'checked:bg-primary-base',
     'disabled:opacity-40 disabled:pointer-events-none',
     'transition-colors',
