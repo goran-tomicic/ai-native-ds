@@ -22,9 +22,29 @@ Most design systems are documented for humans. But increasingly, the consumer is
 | Phase 1 — build                 | Days 1–10      | Build the system, run tests, refine thesis                    | ✅ Done        |
 | Phase 1.5 — refinement          | Days 11, 17–18 | Conventions cleanup, v4 experiment                            | ✅ Done        |
 | Phase 2 — case study writing    | Writing chat   | Long-form post + case study page + video                      | 🟡 In progress |
-| Phase 3 — finish original scope | Days 19+       | Build remaining components + experimental thesis confirmation | 🟡 In progress |
+| Phase 3 — finish original scope | Days 19+       | Build remaining components + experimental thesis confirmation | 🟡 Nearly done |
 
-**Phase 3 progress: 7 of 11 originally-planned components fully shipped.** 4 more components to reach the original 11-component scope. Thesis confirmation completed Days 28-29.
+**Phase 3 progress: 10 of 11 originally-planned components shipped.** One more component closes the original 10-week scope. Thesis confirmation completed Days 28-29.
+
+---
+
+## Components shipped (10 of 11)
+
+| Component  | Spec | Impl | Playground | Category  |
+| ---------- | ---- | ---- | ---------- | --------- |
+| Badge      | ✅   | ✅   | ✅         | display   |
+| Button     | ✅   | ✅   | ✅         | action    |
+| Spinner    | ✅   | ✅   | ✅         | feedback  |
+| Input      | ✅   | ✅   | ✅         | form      |
+| Card       | ✅   | ✅   | ✅         | container |
+| Dialog     | ✅   | ✅   | ✅         | overlay   |
+| FormField  | ✅   | ✅   | ✅         | form      |
+| Checkbox   | ✅   | ✅   | ✅         | form      |
+| Radio      | ✅   | ✅   | ✅         | form      |
+| RadioGroup | ✅   | ✅   | ✅         | form      |
+| Switch     | ✅   | ✅   | ✅         | form      |
+
+(That is technically 11 components in the table — the original "11-component scope" counted RadioGroup and Radio as a pair, or counted differently. Either way: one more substantial component — Toast, Select, or Tabs — closes the originally-envisioned scope. See Day 32 plan.)
 
 ---
 
@@ -37,15 +57,17 @@ Most design systems are documented for humans. But increasingly, the consumer is
 - Three-layer token architecture (core + semantic/common + semantic/palette)
 - Token sources bifurcated: Figma Variables + `AUTHORED_CORE_TOKENS` block
 - Disabled state via opacity + pointer-events, palette-agnostic
-- AI consumption surfaces: llms.txt, .llm.md (with `## Import` section as of Day 29), static API JSON, MCP server
+- AI consumption surfaces: llms.txt, .llm.md (with `## Import` section), static API JSON, MCP server
 - Single source of truth for conventions: `docs/system-meta.json`
 - Component prop naming: `palette` for intent, `variant` for visual treatment
 - Subcomponents as first-class entities: `Component.SubcomponentName`
 - Component schema does not require `accessibility.role`
 - Overlay components use native browser primitives where viable
 - Context-based ARIA wiring for compound components with required accessibility associations
-- **Form controls compose with FormField, never have label props themselves** (Day 30 established this)
-- **FormField auto-wires id/htmlFor and aria-describedby/aria-invalid via React Context** (Day 30 pattern)
+- Form controls compose with FormField, never have label props themselves
+- FormField auto-wires id/htmlFor and aria-describedby/aria-invalid via React Context
+- **Form controls (Checkbox, Radio, Switch) are styled native inputs — no custom widgets** (Day 31)
+- **Grouped controls use a Group parent component owning shared state via context** (Day 31, RadioGroup)
 - Public repo, commit history is part of the artifact
 
 ### Editorial (writing chat)
@@ -80,125 +102,78 @@ Foundations, tokens, components (Badge, Button, Spinner), AI consumption layer, 
 
 ### Day 27 ✅ Dialog implementation
 
-### Day 28 ✅ Dialog playground + AI consumption test
-
-Day 25 thesis refuted. Refined to perceived-availability thesis. Concrete intervention identified.
+### Day 28 ✅ Dialog playground + AI consumption test (Day 25 thesis refuted, perceived-availability identified)
 
 ### Day 29 ✅ Intervention test — perceived-availability thesis confirmed
 
-The most consequential experimental result of the project. Single-variable intervention (added `## Import` section) produced predicted behavior change (consumption appeared, ~88% reduction in output size).
+### Day 30 ✅ FormField — form composition wrapper, bidirectional context pattern
 
-### Day 30 ✅ FormField — the form composition wrapper
+### Day 31 ✅ Form controls trio + group: Checkbox + Radio + RadioGroup + Switch
 
-**Architecturally significant component shipped.** FormField sets the form composition pattern that all other form controls will follow.
+**Four components shipped in one session — the most ambitious component day of the project.** Doable because Checkbox/Radio/Switch are structurally near-identical; RadioGroup is the only one with genuinely new logic.
 
 **What shipped:**
 
-1. **FormField spec v0.1.0** (`components/form-field/form-field.spec.json`)
-   - 3 props: `required`, `invalid`, `id` (optional override of auto-generated)
-   - 3 subcomponents: `FormField.Label`, `FormField.Helper`, `FormField.Error`
-   - Comprehensive ARIA requirements documented
-   - Composition rules: one form control per FormField, label first, error replaces helper
+1. **Checkbox** (`components/checkbox/checkbox.tsx`)
+   - Native `input[type=checkbox]` styled via cva (size axis only, no variant matrix)
+   - Indeterminate state — set via ref (`.indeterminate` is a DOM property, not an attribute) in a useEffect
+   - `aria-checked='mixed'` when indeterminate
+   - Checkmark via data-URI background image on `:checked`
+   - Consumes FormFieldContext for auto-wired id
 
-2. **FormField implementation** (`components/form-field/form-field.tsx`)
-   - Auto-generated ID via `useId()` — eliminates manual id/htmlFor management
-   - `FormFieldContext` provides id, invalid state, required flag, and helper/error IDs
-   - Subcomponents register their IDs with the parent FormField (for aria-describedby wiring)
-   - Required indicator on FormField.Label (asterisk, danger color)
-   - FormField.Error replaces FormField.Helper when both would render
-   - FormField.Error has `role="alert"` and `aria-live="polite"` for screen reader announcement
-   - Compound component pattern via `FormFieldCompound` type assertion (same as Card/Dialog)
-   - Exports `useFormFieldContext` hook for form controls to consume
+2. **Radio** (`components/radio/radio.tsx`)
+   - Native `input[type=radio]` styled via cva
+   - Consumes `RadioGroupContext` for shared name, selected value, onChange, size, disabled
+   - `checked` state derived from `groupCtx.value === value`
+   - Dot indicator via radial-gradient background on `:checked`
+   - Also consumes FormFieldContext for auto-wired id
 
-3. **Input refactor to consume FormField context**
-   - Input now reads `useFormFieldContext()` at component start
-   - When inside FormField: id, state (error if invalid), aria-describedby, aria-invalid all auto-wired from context
-   - When standalone: Input still works with manual props (context is optional)
-   - Clean fallback semantics — context wins when present, props win otherwise
+3. **RadioGroup** (`components/radio-group/radio-group.tsx`)
+   - Owns the shared `name`, selected `value`, `onChange`, `size`, `disabled`
+   - Provides `RadioGroupContext` to child Radios
+   - Controlled + uncontrolled (via `value` vs `defaultValue`)
+   - `role="radiogroup"`, vertical/horizontal orientation
+   - One-directional import: Radio imports RadioGroup's context export (not a cycle)
 
-4. **Playground integration** with 5 FormField examples:
-   - Default (label + input)
-   - With helper text
-   - Required field
-   - Invalid field with error
-   - Required + invalid combined
+4. **Switch** (`components/switch/switch.tsx`)
+   - Native `input[type=checkbox]` + `role="switch"` (signals immediate-effect toggle to screen readers)
+   - Sliding thumb via `::before` pseudo-element with `translate-x` transition
+   - Size axis scales track width, track height, thumb size
+   - Consumes FormFieldContext
 
-**Visual verification passed:**
+**Architectural notes:**
 
-- Clicking label focuses inner input (auto-wired htmlFor works)
-- Required asterisk renders correctly
-- Invalid state propagates: Input gets red border via context
-- Error replaces helper when both would render
-- aria-describedby and aria-invalid correctly applied in DevTools inspection
-- Dark mode adapts
+- **Form controls are styled native inputs, not custom widgets.** This is a deliberate accessibility-first choice. Native `<input type="checkbox|radio">` gives keyboard handling, focus management, and form integration for free. The cva styling makes them look designed; the underlying element stays native.
 
-**Architectural significance:**
+- **RadioGroup establishes the "Group parent owns shared state" pattern.** This is the same bidirectional-context family as FormField, but used for selection state rather than ARIA wiring. Future grouped components (a future ToggleGroup, ButtonGroup, etc.) would follow this.
 
-This is the _third_ compound component pattern in the system, but with a new variation. Card/Input used children inspection (positional). Dialog used Context for ARIA wiring (data sharing between siblings). FormField uses Context **bidirectionally** — parent provides context, but subcomponents _write back_ (helper/error IDs registered into parent state via setters).
+- **All four compose with FormField uniformly.** The Day 30 FormField refactor pays off: Checkbox, Radio, Switch all consume `useFormFieldContext()` the same way Input does. The form category is now internally consistent — every form control composes with FormField identically.
 
-This establishes a complete vocabulary for compound components:
-
-- **Children inspection** (Input, Card): "where does this subcomponent go visually?"
-- **Context one-way** (Dialog): "parent shares state with subcomponents"
-- **Context bidirectional** (FormField): "parent provides scaffolding, subcomponents register themselves"
-
-Future components requiring complex composition (Tabs with active state, RadioGroup with selection) will likely use the bidirectional context pattern.
-
-**Why this was the right next component:**
-
-Input has referenced FormField since Day 19. Five sessions of documentation promising "FormField composes with Input for labels/errors" but no actual FormField. Day 30 closes that gap. More importantly: Checkbox, Radio, Switch, Select will all compose with FormField the same way Input does. Building FormField first means the form-control trio (Day 31) inherits the composition pattern without rebuilding it.
-
-**One TypeScript issue caught and fixed mid-session:**
-
-Original implementation had `export function FormField(...)` on the declaration AND `export { FormFieldWithSubs as FormField }` at the bottom — double export collision (TS2484). Fixed by removing `export` from the function declaration, matching the Card/Dialog pattern. Worth flagging because: the compound component pattern requires the function be a `const` or non-exported, with the compound type assertion handling the public export.
+**Fiddly CSS resolved:** Checkbox checkmark (data-URI background), Radio dot (radial-gradient), Switch thumb (`::before` pseudo-element). All three are "styled native input" tricks. They render correctly in both modes.
 
 **Artifacts:**
 
-- `components/form-field/form-field.spec.json` v0.1.0
-- `components/form-field/form-field.tsx` implementation
-- `components/input/input.tsx` refactored to consume FormFieldContext
-- `components/form-field/form-field.llm.md` regenerated
-- `public/api/components.json` regenerated (FormField added)
-- `llms.txt` regenerated (FormField listed)
-- `playground/src/App.tsx` updated with FormField section
+- 4 spec files, 4 implementation files
+- `playground/src/App.tsx` updated with Checkbox / RadioGroup / Switch sections
+- `components/*/*.llm.md` regenerated (all four included, all with `## Import` sections)
+- `public/api/components.json` and `llms.txt` regenerated
+- 2 commits (specs, then implementations + playground)
 
 ---
 
-### Day 31 🟡 Planned — Form controls trio: Checkbox + Radio + Switch
+### Day 32 🟡 Planned — Final component (closes original scope)
 
-**Goal:** Ship three structurally-similar form controls in one session, all composing with FormField.
+The last component of the original 10-week plan. Three candidates:
 
-**Why three at once:**
+**Toast** — closes the Day 8 Test 5 historical gap (the original test where the model invented a Toast that didn't exist). Narratively satisfying to build the thing that became the most-cited failure example. Operationally complex: queue management, dismissal timing, positioning, ARIA live regions, animation lifecycle. Likely spec-day + impl-day pair.
 
-Checkbox, Radio, and Switch share core characteristics:
+**Select** — completes the form-input story alongside Input. Operationally complex: keyboard navigation, option list rendering, optional search/filter. Often built on a primitive library. Likely 2-day component.
 
-- Native HTML input as foundation (`<input type="checkbox|radio|switch-equivalent">`)
-- Single visual treatment (no variant axis like Button/Card)
-- Size axis (sm/md/lg)
-- States: default, checked, disabled, indeterminate (Checkbox only)
-- All compose inside FormField for label/helper/error layout
+**Tabs** — common navigation pattern. Exercises the compound subcomponent system once more (Tabs.List, Tabs.Tab, Tabs.Panel). Moderate complexity. ~1 spec day + 1 impl day.
 
-Building them together means making consistent decisions once instead of three times. Estimated ~120 min for all three (40 min each on average, with shared spec patterns).
+**Recommendation when Day 32 arrives:** Toast, for the narrative payoff (closing the Day 8 loop) and because it adds a genuinely new component category (transient feedback) that the system doesn't have yet. But Tabs is the lower-risk choice if energy is limited.
 
-**Special cases to be ready for:**
-
-- **Checkbox indeterminate state:** third state for "some children checked." Native input supports it via JS property (not attribute). Need explicit handling.
-- **Radio group semantics:** Radio components in a group need to share a `name` for native radio behavior. May want a `RadioGroup` parent component to handle this — decision point on Day 31.
-- **Switch is not a native HTML element:** must be `<input type="checkbox">` styled as a toggle. ARIA implication: should it have `role="switch"`? Probably yes.
-
-**By end of Day 31: 10 components shipped. One more to hit the original 11-component scope.**
-
----
-
-### Day 32 🟡 Planned — Last component (final piece of original scope)
-
-Three candidates worth considering once we reach this day:
-
-- **Toast** — closes the Day 8 Test 5 historical gap (model invented a Toast that didn't exist). Operationally complex (queue, dismissal timing, positioning, ARIA live regions). ~3-4 hours of work split across spec + impl.
-- **Select** — completes the form input pair with Input. Operationally complex (keyboard nav, list rendering). ~3-4 hours.
-- **Tabs** — common navigation pattern, exercises compound component system further. ~3 hours.
-
-Decision on Day 32 will depend on energy level and which feels most needed. All three are defensible final components.
+**After Day 32: original 10-week scope complete.** Then Phase 3 wrap-up: pipeline hardening, code cleanup, README/docs polish, possibly the parked intervention-generalization tests.
 
 ---
 
@@ -212,7 +187,8 @@ Decision on Day 32 will depend on energy level and which feels most needed. All 
 - **Dark-mode-aware shadows:** v0.1 ships single-mode.
 - **Multi-framework consumption (Vue, Svelte):** still parked.
 - **Other AI editors:** Cursor, Aider, Copilot.
-- **Code cleanup:** dead files from earlier iterations.
+- **Code cleanup:** dead files from earlier iterations — should happen during Phase 3 wrap-up.
+- **Fieldset component:** referenced in FormField's related-components but not built. Possible future addition.
 
 ---
 
@@ -229,7 +205,7 @@ Decision on Day 32 will depend on energy level and which feels most needed. All 
 - **Variant (component-level)** — visual treatment a component supports
 - **State modifier** — token suffix
 - **Subcomponent** — component accessed via dot notation
-- **Compound component pattern** — React pattern. Three flavors in the system: children-inspection (Input, Card), one-way context (Dialog), bidirectional context (FormField).
+- **Compound component pattern** — React pattern. Flavors in the system: children-inspection (Input, Card), one-way context (Dialog), bidirectional context (FormField, RadioGroup).
 - **Effect style (Figma)** — Figma's term for styled effects like drop shadows
 - **AUTHORED_CORE_TOKENS** — block in `scripts/normalize-tokens.ts` for tokens Figma can't express
 - **`.llm.md`** — per-component AI-optimized documentation
@@ -239,9 +215,9 @@ Decision on Day 32 will depend on energy level and which feels most needed. All 
 - **Reimplementation cost** — Day 25 thesis. Refuted Day 28.
 - **Perceived availability** — Day 28 thesis. Confirmed by Day 29 intervention.
 - **Intervention test** — Day 29 experimental method
-- **DialogContext** — React Context shared between Dialog and subcomponents
-- **FormFieldContext** — React Context shared between FormField, its subcomponents, and the inner form control
+- **DialogContext / FormFieldContext / RadioGroupContext** — React Contexts for compound component coordination
+- **Styled native input** — the Day 31 approach for form controls: native HTML input element styled via cva, keeping native keyboard/focus/form behavior while looking designed
 
 ---
 
-_Last updated: end of Day 30. FormField shipped. Seven components implemented. Form composition pattern locked. Next: Form controls trio (Day 31)._
+_Last updated: end of Day 31. Ten components shipped. Form category complete and internally consistent. One component from the original scope. Next: final component (Day 32)._
