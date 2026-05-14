@@ -1,0 +1,115 @@
+{
+  "$schema": "../../schemas/component.schema.json",
+  "name": "RadioGroup",
+  "version": "0.1.0",
+  "status": "experimental",
+  "category": "form",
+  "description": "Container for a set of mutually-exclusive Radio options. Owns the shared name, the selected value, and the change handler. Provides these to child Radio components via context. Radios inside a RadioGroup automatically get correct single-selection behavior and keyboard navigation.",
+
+  "props": {
+    "name": {
+      "type": "string",
+      "description": "Shared form field name applied to all Radios in the group. Required for native radio behavior and form submission."
+    },
+    "value": {
+      "type": "string",
+      "optional": true,
+      "description": "Controlled selected value. The Radio whose value matches is rendered as selected."
+    },
+    "defaultValue": {
+      "type": "string",
+      "optional": true,
+      "description": "Uncontrolled initial selected value."
+    },
+    "onChange": {
+      "type": "(value: string) => void",
+      "optional": true,
+      "description": "Called when selection changes. Receives the newly-selected Radio's value."
+    },
+    "size": {
+      "type": "enum",
+      "values": ["sm", "md", "lg"],
+      "default": "md",
+      "description": "Size applied to all Radios in the group. Individual Radios inherit this unless they override."
+    },
+    "disabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Disables the entire group. Individual Radios can also be disabled independently."
+    },
+    "orientation": {
+      "type": "enum",
+      "values": ["vertical", "horizontal"],
+      "default": "vertical",
+      "description": "Layout direction of the radio options. Vertical is default and usually correct; horizontal for short option sets where space allows."
+    }
+  },
+
+  "states": ["default", "disabled"],
+
+  "tokens": {
+    "shared": {
+      "gap_vertical":   "space.2",
+      "gap_horizontal": "space.4"
+    }
+  },
+
+  "accessibility": {
+    "role": "radiogroup",
+    "keyboard": ["Arrow keys move selection between Radios", "Tab moves focus into/out of the group as a unit"],
+    "requirements": [
+      "RadioGroup has role='radiogroup'",
+      "The group should have an accessible label — wrap the RadioGroup in a FormField, or use aria-label/aria-labelledby",
+      "Arrow key navigation cycles selection within the group",
+      "Tab enters the group at the selected radio (or first radio if none selected) and exits the group entirely on next Tab"
+    ]
+  },
+
+  "composition": {
+    "allowedChildren": ["Radio", "FormField (wrapping a Radio)"],
+    "forbiddenChildren": ["RadioGroup"],
+    "commonParents": ["FormField", "form", "Card.Body", "Dialog.Body"]
+  },
+
+  "rules": {
+    "do": [
+      "Always wrap Radio components in a RadioGroup",
+      "Give RadioGroup a meaningful name for form submission",
+      "Wrap the whole RadioGroup in a FormField if the group needs a label (it usually does)",
+      "Use horizontal orientation only for 2-3 short options"
+    ],
+    "dont": [
+      "Don't put non-Radio interactive content inside RadioGroup",
+      "Don't nest RadioGroups",
+      "Don't use a RadioGroup with a single Radio — if there's only one option, it's a Checkbox"
+    ]
+  },
+
+  "examples": [
+    {
+      "name": "Controlled RadioGroup with FormField label",
+      "code": "<FormField>\n  <FormField.Label>Subscription plan</FormField.Label>\n  <RadioGroup name=\"plan\" value={plan} onChange={setPlan}>\n    <FormField><FormField.Label>Free</FormField.Label><Radio value=\"free\" /></FormField>\n    <FormField><FormField.Label>Pro</FormField.Label><Radio value=\"pro\" /></FormField>\n    <FormField><FormField.Label>Enterprise</FormField.Label><Radio value=\"enterprise\" /></FormField>\n  </RadioGroup>\n</FormField>",
+      "context": "Plan picker in a settings form"
+    },
+    {
+      "name": "Horizontal orientation",
+      "code": "<RadioGroup name=\"size\" defaultValue=\"md\" orientation=\"horizontal\">\n  <FormField><FormField.Label>S</FormField.Label><Radio value=\"sm\" /></FormField>\n  <FormField><FormField.Label>M</FormField.Label><Radio value=\"md\" /></FormField>\n  <FormField><FormField.Label>L</FormField.Label><Radio value=\"lg\" /></FormField>\n</RadioGroup>",
+      "context": "Compact size selector"
+    }
+  ],
+
+  "antiPatterns": [
+    {
+      "bad": "<RadioGroup name=\"only\"><Radio value=\"yes\" /></RadioGroup>",
+      "good": "<FormField><FormField.Label>Accept terms</FormField.Label><Checkbox /></FormField>",
+      "why": "A RadioGroup with a single option is a binary choice — that's a Checkbox. RadioGroup is for selecting one of several."
+    }
+  ],
+
+  "related": {
+    "use_instead_when": [
+      { "component": "Select", "when": "there are many options (roughly 6+) or vertical space is constrained" },
+      { "component": "Checkbox", "when": "multiple selections should be allowed" }
+    ]
+  }
+}

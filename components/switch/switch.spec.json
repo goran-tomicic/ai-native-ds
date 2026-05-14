@@ -1,0 +1,109 @@
+{
+  "$schema": "../../schemas/component.schema.json",
+  "name": "Switch",
+  "version": "0.1.0",
+  "status": "experimental",
+  "category": "form",
+  "description": "Toggle for a setting that takes immediate effect. Built on native input[type=checkbox] with role='switch'. Visually a sliding toggle. Use for on/off settings where the change applies immediately (not for form fields that are submitted later — use Checkbox for those).",
+
+  "props": {
+    "size": {
+      "type": "enum",
+      "values": ["sm", "md", "lg"],
+      "default": "md",
+      "description": "Physical size of the toggle."
+    },
+    "checked": {
+      "type": "boolean",
+      "optional": true,
+      "description": "Controlled on/off state."
+    },
+    "defaultChecked": {
+      "type": "boolean",
+      "optional": true,
+      "description": "Uncontrolled initial state."
+    },
+    "disabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Prevents interaction."
+    },
+    "onChange": {
+      "type": "(event: ChangeEvent<HTMLInputElement>) => void",
+      "optional": true,
+      "description": "Standard React change handler. For Switch, this typically triggers an immediate side effect (save setting, toggle feature)."
+    }
+  },
+
+  "states": ["off", "on", "disabled", "focus"],
+
+  "tokens": {
+    "size_slots": {
+      "sm": { "track_w": "28px", "track_h": "16px", "thumb": "12px" },
+      "md": { "track_w": "36px", "track_h": "20px", "thumb": "16px" },
+      "lg": { "track_w": "44px", "track_h": "24px", "thumb": "20px" }
+    },
+    "shared": {
+      "track_off":   "color.common.border.base",
+      "track_on":    "color.palette.primary.base",
+      "thumb_color": "color.palette.primary.contrast",
+      "focus_ring":  "color.common.border.focus"
+    },
+    "effects": {
+      "disabled_opacity": "0.4",
+      "transition":       "background-color 150ms ease, transform 150ms ease"
+    }
+  },
+
+  "accessibility": {
+    "role": "switch",
+    "keyboard": ["Space toggles the switch"],
+    "requirements": [
+      "Switch has role='switch' (not 'checkbox') — this signals to screen readers it's an immediate-effect toggle",
+      "Must have an accessible label via FormField.Label or aria-label",
+      "aria-checked reflects on/off state",
+      "Focus ring must be visible"
+    ]
+  },
+
+  "composition": {
+    "allowedChildren": [],
+    "forbiddenChildren": ["any"],
+    "commonParents": ["FormField", "settings row", "list item"]
+  },
+
+  "rules": {
+    "do": [
+      "Use Switch for settings that take effect immediately (dark mode, notifications on/off, feature flags)",
+      "Wrap in FormField for label and layout",
+      "Pair the Switch with a label describing the setting in its 'on' meaning ('Email notifications', not 'Toggle notifications')"
+    ],
+    "dont": [
+      "Don't use Switch for form fields submitted later — use Checkbox",
+      "Don't use Switch for choices that aren't binary on/off",
+      "Don't use Switch when the change needs confirmation — switches imply immediate, reversible effect"
+    ]
+  },
+
+  "examples": [
+    {
+      "name": "Settings toggle",
+      "code": "<FormField>\n  <FormField.Label>Email notifications</FormField.Label>\n  <Switch checked={emailOn} onChange={(e) => setEmailOn(e.target.checked)} />\n</FormField>",
+      "context": "Notification setting that saves immediately"
+    }
+  ],
+
+  "antiPatterns": [
+    {
+      "bad": "<FormField><FormField.Label>Accept terms and conditions</FormField.Label><Switch /></FormField>",
+      "good": "<FormField><FormField.Label>Accept terms and conditions</FormField.Label><Checkbox /></FormField>",
+      "why": "Accepting terms is a form input submitted on form submission, not an immediate-effect setting. Switch implies the change takes effect the instant it's toggled. Use Checkbox for form fields."
+    }
+  ],
+
+  "related": {
+    "use_instead_when": [
+      { "component": "Checkbox", "when": "the value is part of a form submitted later, or the choice isn't an immediate-effect setting" }
+    ]
+  }
+}

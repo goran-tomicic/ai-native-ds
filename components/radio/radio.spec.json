@@ -1,0 +1,100 @@
+{
+  "$schema": "../../schemas/component.schema.json",
+  "name": "Radio",
+  "version": "0.1.0",
+  "status": "experimental",
+  "category": "form",
+  "description": "Single option within a mutually-exclusive group. Built on native input[type=radio]. Must be used inside a RadioGroup — RadioGroup owns the shared name, selected value, and change handler. A Radio outside a RadioGroup has no group semantics.",
+
+  "props": {
+    "value": {
+      "type": "string",
+      "description": "The value this radio represents. RadioGroup compares this against its selected value to determine checked state. Required."
+    },
+    "size": {
+      "type": "enum",
+      "values": ["sm", "md", "lg"],
+      "default": "md",
+      "description": "Physical size. Usually inherited from RadioGroup; set individually only for unusual layouts."
+    },
+    "disabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Disables this specific radio option. The rest of the group remains interactive."
+    }
+  },
+
+  "states": ["default", "selected", "disabled", "focus"],
+
+  "tokens": {
+    "size_slots": {
+      "sm": { "box": "14px", "dot": "6px" },
+      "md": { "box": "16px", "dot": "7px" },
+      "lg": { "box": "20px", "dot": "9px" }
+    },
+    "shared": {
+      "bg":             "color.common.surface.base",
+      "border":         "color.common.border.base",
+      "border_selected":"color.palette.primary.base",
+      "dot_color":      "color.palette.primary.base",
+      "focus_ring":     "color.common.border.focus"
+    },
+    "effects": {
+      "disabled_opacity": "0.4",
+      "transition":       "border-color 120ms ease"
+    }
+  },
+
+  "accessibility": {
+    "role": "radio",
+    "keyboard": ["Arrow keys move between options in the group", "Space selects the focused option"],
+    "requirements": [
+      "Radio must be inside a RadioGroup for correct keyboard navigation and group semantics",
+      "Each Radio needs an accessible label — via FormField.Label or aria-label",
+      "Only one Radio in a group can be selected at a time — enforced by RadioGroup",
+      "Arrow key navigation moves selection within the group (native radio behavior)"
+    ]
+  },
+
+  "composition": {
+    "allowedChildren": [],
+    "forbiddenChildren": ["any"],
+    "commonParents": ["RadioGroup"]
+  },
+
+  "rules": {
+    "do": [
+      "Always use Radio inside a RadioGroup",
+      "Give each Radio a unique value within its group",
+      "Use Radio when exactly one choice must be selected from a set"
+    ],
+    "dont": [
+      "Don't use Radio outside a RadioGroup — it loses group semantics and keyboard navigation",
+      "Don't use Radio for independent choices — that's Checkbox",
+      "Don't use Radio for on/off toggles — that's Switch"
+    ]
+  },
+
+  "examples": [
+    {
+      "name": "Radio inside RadioGroup",
+      "code": "<RadioGroup name=\"plan\" value={plan} onChange={setPlan}>\n  <FormField><FormField.Label>Free</FormField.Label><Radio value=\"free\" /></FormField>\n  <FormField><FormField.Label>Pro</FormField.Label><Radio value=\"pro\" /></FormField>\n</RadioGroup>",
+      "context": "Plan selection"
+    }
+  ],
+
+  "antiPatterns": [
+    {
+      "bad": "<Radio value=\"a\" /> <Radio value=\"b\" />",
+      "good": "<RadioGroup name=\"choice\" value={v} onChange={setV}><Radio value=\"a\" /><Radio value=\"b\" /></RadioGroup>",
+      "why": "Radios outside a RadioGroup have no shared name, no enforced single-selection, and no arrow-key navigation. RadioGroup provides all three."
+    }
+  ],
+
+  "related": {
+    "use_instead_when": [
+      { "component": "Checkbox", "when": "choices are independent (multiple can be selected)" },
+      { "component": "Select", "when": "there are many options and space is limited" }
+    ]
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "$schema": "../../schemas/component.schema.json",
+  "name": "Checkbox",
+  "version": "0.1.0",
+  "status": "experimental",
+  "category": "form",
+  "description": "Binary or tri-state checkbox built on native input[type=checkbox]. Composes with FormField for label, helper, and error layout. Supports an indeterminate state for 'some but not all' selections (e.g., a select-all checkbox when only some children are checked).",
+
+  "props": {
+    "size": {
+      "type": "enum",
+      "values": ["sm", "md", "lg"],
+      "default": "md",
+      "description": "Physical size of the checkbox. sm for dense lists, md default, lg for touch-primary or emphasis."
+    },
+    "checked": {
+      "type": "boolean",
+      "optional": true,
+      "description": "Controlled checked state. If provided, Checkbox is controlled."
+    },
+    "defaultChecked": {
+      "type": "boolean",
+      "optional": true,
+      "description": "Uncontrolled initial checked state."
+    },
+    "indeterminate": {
+      "type": "boolean",
+      "default": false,
+      "description": "Tri-state indicator for 'some but not all'. Visually distinct from both checked and unchecked. Common for a parent checkbox controlling a group. Note: indeterminate is a visual/ARIA state — the underlying input value is still either checked or unchecked."
+    },
+    "disabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Prevents interaction. Reduces opacity to indicate non-interactive state."
+    },
+    "onChange": {
+      "type": "(event: ChangeEvent<HTMLInputElement>) => void",
+      "optional": true,
+      "description": "Standard React change handler."
+    },
+    "name": {
+      "type": "string",
+      "optional": true,
+      "description": "Form field name for data submission."
+    },
+    "value": {
+      "type": "string",
+      "optional": true,
+      "description": "Value submitted when checked, if part of a form."
+    }
+  },
+
+  "states": ["default", "checked", "indeterminate", "disabled", "focus"],
+
+  "tokens": {
+    "size_slots": {
+      "sm": { "box": "14px", "check": "10px" },
+      "md": { "box": "16px", "check": "12px" },
+      "lg": { "box": "20px", "check": "15px" }
+    },
+    "shared": {
+      "bg_unchecked":   "color.common.surface.base",
+      "bg_checked":     "color.palette.primary.base",
+      "border":         "color.common.border.base",
+      "border_checked": "color.palette.primary.base",
+      "check_color":    "color.palette.primary.contrast",
+      "radius":         "radius.sm",
+      "focus_ring":     "color.common.border.focus"
+    },
+    "effects": {
+      "disabled_opacity": "0.4",
+      "transition":       "background-color 120ms ease, border-color 120ms ease"
+    }
+  },
+
+  "accessibility": {
+    "role": "checkbox",
+    "keyboard": ["Space"],
+    "requirements": [
+      "Must have an accessible label — via FormField.Label, aria-label, or aria-labelledby",
+      "Indeterminate state must set aria-checked='mixed' (not just the visual treatment)",
+      "Focus ring must be visible",
+      "Disabled checkboxes should still be readable by screen readers, just not interactive"
+    ]
+  },
+
+  "composition": {
+    "allowedChildren": [],
+    "forbiddenChildren": ["any"],
+    "commonParents": ["FormField", "form", "list item"]
+  },
+
+  "rules": {
+    "do": [
+      "Wrap in FormField for label and layout",
+      "Use indeterminate for parent checkboxes controlling a group",
+      "Use Checkbox for independent binary choices — if choices are mutually exclusive, use Radio"
+    ],
+    "dont": [
+      "Don't use Checkbox for mutually exclusive choices — that's Radio's job",
+      "Don't override the disabled opacity",
+      "Don't use indeterminate as a permanent state — it represents a transitional 'some selected' condition"
+    ]
+  },
+
+  "examples": [
+    {
+      "name": "Basic checkbox in FormField",
+      "code": "<FormField>\n  <FormField.Label>Subscribe to newsletter</FormField.Label>\n  <Checkbox />\n</FormField>",
+      "context": "Opt-in checkbox"
+    },
+    {
+      "name": "Indeterminate parent",
+      "code": "<Checkbox\n  checked={allChecked}\n  indeterminate={someChecked && !allChecked}\n  onChange={toggleAll}\n/>",
+      "context": "Select-all checkbox controlling a list"
+    }
+  ],
+
+  "antiPatterns": [
+    {
+      "bad": "<Checkbox /> <span>Accept terms</span>",
+      "good": "<FormField><FormField.Label>Accept terms</FormField.Label><Checkbox /></FormField>",
+      "why": "A standalone span next to a checkbox has no programmatic association. FormField wires the label correctly."
+    }
+  ],
+
+  "related": {
+    "use_instead_when": [
+      { "component": "Radio", "when": "choices are mutually exclusive" },
+      { "component": "Switch", "when": "the choice toggles a setting on/off with immediate effect" }
+    ]
+  }
+}
