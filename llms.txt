@@ -33,6 +33,7 @@ For architecture reasoning:
 - RadioGroup — Container for a set of mutually-exclusive Radio options
 - Spinner — Indicates ongoing background activity
 - Switch — Toggle for a setting that takes immediate effect
+- Toast — Transient notification that appears in response to an event, auto-dismisses after a timeout, and stacks with other toasts
 
 ## Token model (summary)
 

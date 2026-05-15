@@ -1,0 +1,249 @@
+{
+  "$schema": "../../schemas/component.schema.json",
+  "name": "Toast",
+  "version": "0.1.0",
+  "status": "experimental",
+  "category": "feedback",
+  "description": "Transient notification that appears in response to an event, auto-dismisses after a timeout, and stacks with other toasts. Unlike every other component in this system, Toast is imperative: you don't render it, you trigger it via the useToast hook. The ToastProvider must wrap the app; useToast returns trigger functions; the visual Toast is rendered by the provider and rarely touched directly. Use for confirmations of background actions (save succeeded, item deleted, upload failed). Not for content that requires acknowledgment — use Dialog for that.",
+
+  "architecture": {
+    "summary": "Toast is three coordinated pieces, not one component.",
+    "pieces": [
+      {
+        "name": "ToastProvider",
+        "role": "Wraps the app (typically at the root). Owns the toast queue state, renders the visual stack in a fixed-position container, manages timers. Configured once with position and default duration."
+      },
+      {
+        "name": "useToast",
+        "role": "Hook consumed anywhere inside the provider. Returns an object with trigger methods (toast.success, toast.error, toast.info, toast.warning, toast.show, and toast.dismiss). This is the API consumers actually use."
+      },
+      {
+        "name": "Toast (visual)",
+        "role": "The individual notification element. Rendered by ToastProvider from queue state. Consumers do not render this directly. Documented here for completeness and styling reference."
+      }
+    ]
+  },
+
+  "props": {
+    "ToastProvider": {
+      "position": {
+        "type": "enum",
+        "values": ["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"],
+        "default": "bottom-right",
+        "description": "Where the toast stack appears. App-wide setting. bottom-right is the most common convention; top-center is good for high-priority apps where toasts shouldn't be missed."
+      },
+      "defaultDuration": {
+        "type": "number",
+        "default": 5000,
+        "description": "Default auto-dismiss timeout in milliseconds. Individual toasts can override. Set to 0 for no auto-dismiss (toast persists until manually dismissed). Range guidance: 4000-6000ms for normal messages, longer for messages with actions, 0 for errors the user must see."
+      },
+      "max": {
+        "type": "number",
+        "default": 3,
+        "description": "Maximum simultaneous visible toasts. When exceeded, the oldest toast is dismissed to make room. Prevents toast spam from overwhelming the screen."
+      },
+      "gap": {
+        "type": "number",
+        "default": 8,
+        "description": "Pixel gap between stacked toasts."
+      },
+      "children": {
+        "type": "ReactNode",
+        "description": "The app. ToastProvider wraps everything so useToast is available throughout."
+      }
+    },
+    "useToastTrigger": {
+      "message": {
+        "type": "string",
+        "description": "The toast text. Keep it short — one line ideally. Toasts are glanceable, not readable."
+      },
+      "options": {
+        "type": "object",
+        "optional": true,
+        "description": "Per-toast overrides.",
+        "shape": {
+          "duration": {
+            "type": "number",
+            "optional": true,
+            "description": "Override the provider's defaultDuration for this toast. 0 = no auto-dismiss."
+          },
+          "tone": {
+            "type": "enum",
+            "values": ["neutral", "info", "success", "warning", "danger"],
+            "optional": true,
+            "description": "Visual tone. Usually set implicitly by which trigger method was called (toast.success sets success). Only needed when using toast.show directly."
+          },
+          "action": {
+            "type": "object",
+            "optional": true,
+            "description": "Optional single action button on the toast.",
+            "shape": {
+              "label": { "type": "string", "description": "Action button text, e.g. 'Undo'" },
+              "onClick": { "type": "() => void", "description": "Action handler" }
+            }
+          }
+        }
+      }
+    },
+    "Toast": {
+      "tone": {
+        "type": "enum",
+        "values": ["neutral", "info", "success", "warning", "danger"],
+        "default": "neutral",
+        "description": "Visual tone. Maps to the same palette vocabulary as Badge. Set by the trigger method, not by consumers directly."
+      },
+      "message": {
+        "type": "string",
+        "description": "The notification text."
+      },
+      "action": {
+        "type": "object",
+        "optional": true,
+        "description": "Optional action button (label + onClick)."
+      },
+      "onDismiss": {
+        "type": "() => void",
+        "description": "Called when the toast is dismissed (timeout, manual close, or queue overflow). Wired internally by ToastProvider."
+      }
+    }
+  },
+
+  "useToastAPI": {
+    "description": "The object returned by useToast().",
+    "methods": [
+      { "signature": "toast.show(message, options?)", "description": "Generic toast. tone defaults to neutral unless set in options." },
+      { "signature": "toast.info(message, options?)", "description": "Info toast (tone: info)." },
+      { "signature": "toast.success(message, options?)", "description": "Success toast (tone: success). For confirmations of completed actions." },
+      { "signature": "toast.warning(message, options?)", "description": "Warning toast (tone: warning)." },
+      { "signature": "toast.error(message, options?)", "description": "Danger toast (tone: danger). For failures. Consider duration: 0 so the user doesn't miss it." },
+      { "signature": "toast.dismiss(id?)", "description": "Dismiss a specific toast by id, or all toasts if no id given. Each trigger method returns the toast's id for this purpose." }
+    ]
+  },
+
+  "states": ["entering", "visible", "paused", "exiting"],
+
+  "behavior": {
+    "queue": "Toasts stack in trigger order. Newest appears nearest the triggering edge (e.g. bottom for bottom-right). When max is exceeded, the oldest is dismissed.",
+    "timing": "Each toast auto-dismisses after its duration (or the provider default). duration:0 disables auto-dismiss.",
+    "pauseOnHover": "Hovering any toast pauses the auto-dismiss timer for that toast. Leaving resumes it from where it paused (not a full reset). This prevents toasts vanishing mid-read.",
+    "enterExit": "Toasts animate in (slide + fade from the triggering edge) and out (fade + slight slide). Exit animation completes before the toast is removed from the DOM and the stack reflows.",
+    "stacking": "Toasts are gap-separated. When one dismisses, the rest reflow to close the gap with a transition."
+  },
+
+  "tokens": {
+    "tone_slots": {
+      "neutral": { "bg": "color.common.surface.overlay", "fg": "color.common.fg.strong", "accent": "color.palette.neutral.base" },
+      "info":    { "bg": "color.common.surface.overlay", "fg": "color.common.fg.strong", "accent": "color.palette.primary.base" },
+      "success": { "bg": "color.common.surface.overlay", "fg": "color.common.fg.strong", "accent": "color.palette.success.base" },
+      "warning": { "bg": "color.common.surface.overlay", "fg": "color.common.fg.strong", "accent": "color.palette.warning.base" },
+      "danger":  { "bg": "color.common.surface.overlay", "fg": "color.common.fg.strong", "accent": "color.palette.danger.base" }
+    },
+    "shared": {
+      "radius":        "radius.md",
+      "shadow":        "shadow.lg",
+      "padding":       "space.4",
+      "min_width":     "300px",
+      "max_width":     "440px",
+      "accent_width":  "3px",
+      "border":        "color.common.border.muted"
+    },
+    "effects": {
+      "enter_transition": "transform 200ms ease, opacity 200ms ease",
+      "exit_transition":  "transform 150ms ease, opacity 150ms ease",
+      "reflow_transition": "transform 200ms ease"
+    }
+  },
+
+  "accessibility": {
+    "role": "status",
+    "requirements": [
+      "The toast stack container has aria-live='polite' so screen readers announce toasts as they appear without interrupting the user",
+      "Danger/error toasts may use aria-live='assertive' since failures are higher-priority — consider this per-app",
+      "Each toast has role='status'",
+      "The dismiss button has an accessible label ('Dismiss notification')",
+      "If a toast has an action, the action button must be reachable by keyboard — but note that toasts auto-dismiss, so keyboard users may not have time. For critical actions, use a Dialog instead of a Toast action.",
+      "pauseOnHover should also pause on focus-within, so keyboard users tabbing to a toast action get the same reprieve as mouse users",
+      "Never put essential information ONLY in a toast — they're transient and easily missed. Toasts confirm, they don't inform-critically."
+    ]
+  },
+
+  "composition": {
+    "providerPlacement": "ToastProvider wraps the app once, at or near the root. Do not nest ToastProviders.",
+    "hookUsage": "useToast can be called from any component inside the provider.",
+    "allowedChildren": [],
+    "forbiddenChildren": ["any — Toast content is the message string and optional action, not arbitrary children"]
+  },
+
+  "rules": {
+    "do": [
+      "Wrap the app in ToastProvider once, near the root",
+      "Use the semantic trigger methods (toast.success, toast.error) rather than toast.show with a tone option — clearer intent",
+      "Keep messages short and glanceable — one line",
+      "Use toast.error with duration: 0 for failures the user must acknowledge",
+      "Use a toast action sparingly — 'Undo' on a delete is the canonical good case",
+      "Use toasts to confirm background actions: save, delete, upload, copy"
+    ],
+    "dont": [
+      "Don't put essential information only in a toast — they vanish and are easily missed",
+      "Don't use a toast when the user must make a decision — that's a Dialog",
+      "Don't stack many toasts — the max default of 3 is deliberate; if you're triggering more, reconsider",
+      "Don't put long messages in toasts — if it doesn't fit one line, it's not a toast",
+      "Don't use a toast action for anything destructive or irreversible — the toast may dismiss before the user clicks",
+      "Don't render the Toast component directly — trigger via useToast"
+    ]
+  },
+
+  "examples": [
+    {
+      "name": "Provider setup",
+      "code": "import { ToastProvider } from '@ai-native-ds/toast'\n\nfunction App() {\n  return (\n    <ToastProvider position=\"bottom-right\" defaultDuration={5000}>\n      <YourApp />\n    </ToastProvider>\n  )\n}",
+      "context": "Once, at the app root"
+    },
+    {
+      "name": "Success confirmation",
+      "code": "const toast = useToast()\n\nasync function handleSave() {\n  await saveChanges()\n  toast.success('Changes saved')\n}",
+      "context": "Confirming a completed background action"
+    },
+    {
+      "name": "Error that persists",
+      "code": "const toast = useToast()\n\nasync function handleUpload() {\n  try {\n    await upload(file)\n    toast.success('File uploaded')\n  } catch {\n    toast.error('Upload failed. Check your connection.', { duration: 0 })\n  }\n}",
+      "context": "Failure the user must see — duration 0 means no auto-dismiss"
+    },
+    {
+      "name": "Toast with undo action",
+      "code": "const toast = useToast()\n\nfunction handleDelete(item) {\n  deleteItem(item)\n  toast.show('Item deleted', {\n    action: { label: 'Undo', onClick: () => restoreItem(item) },\n  })\n}",
+      "context": "The canonical good use of a toast action"
+    }
+  ],
+
+  "antiPatterns": [
+    {
+      "bad": "toast.show('Are you sure you want to delete this? Click undo to cancel.')",
+      "good": "<Dialog> ... confirmation with Cancel / Delete ... </Dialog>",
+      "why": "A toast asking for a decision is the wrong component. Toasts are transient and auto-dismiss — the user may never see it, or it may vanish before they act. Decisions need a Dialog."
+    },
+    {
+      "bad": "toast.success('Your report for Q3 2024 has been generated and is now available in the Reports section under the Analytics tab. It includes data from all regions.')",
+      "good": "toast.success('Q3 report ready')",
+      "why": "Toasts are glanceable, not readable. Long messages don't fit the format and the toast will likely dismiss before a long message can be read. If there's more to say, the toast confirms and a persistent UI element holds the detail."
+    },
+    {
+      "bad": "items.forEach(item => toast.success(`Synced ${item.name}`))",
+      "good": "toast.success(`Synced ${items.length} items`)",
+      "why": "Triggering many toasts at once overwhelms the screen and hits the max limit, causing toasts to dismiss each other. Aggregate into one toast."
+    },
+    {
+      "bad": "<ToastProvider><Header /></ToastProvider>\n<ToastProvider><Main /></ToastProvider>",
+      "good": "<ToastProvider><Header /><Main /></ToastProvider>",
+      "why": "Multiple ToastProviders create multiple independent queues and stacks — toasts from different parts of the app appear in different places with different state. One provider at the root."
+    }
+  ],
+
+  "related": {
+    "use_instead_when": [
+      { "component": "Dialog", "when": "the user must make a decision or acknowledge something before continuing" },
+      { "component": "Badge", "when": "the status is persistent and tied to an element, not a transient event" },
+      { "component": "Alert/Callout", "when": "the message is persistent and inline in the page, not transient — note: Alert not yet built" }
+    ]
+  }
+}
