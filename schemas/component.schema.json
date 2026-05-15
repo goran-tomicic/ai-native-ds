@@ -4,6 +4,32 @@
   "description": "Machine-readable contract for a design system component",
   "type": "object",
   "required": ["name", "version", "status", "description", "props", "accessibility"],
+
+  "$defs": {
+    "propDescriptor": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string" },
+        "values": { "type": "array" },
+        "default": {},
+        "description": { "type": "string" },
+        "guidance": { "type": "object" },
+        "optional": { "type": "boolean" },
+        "shape": {
+          "type": "object",
+          "description": "For object-typed props, describes nested keys. Each key is itself a propDescriptor.",
+          "additionalProperties": { "$ref": "#/$defs/propDescriptor" }
+        }
+      }
+    },
+    "propGroup": {
+      "type": "object",
+      "description": "A grouped set of props for imperative or multi-piece components (e.g. ToastProvider, useToast, Toast as three pieces of one component). Each entry inside is itself a propDescriptor.",
+      "additionalProperties": { "$ref": "#/$defs/propDescriptor" }
+    }
+  },
+
   "properties": {
     "name": {
       "type": "string",
@@ -27,17 +53,12 @@
     },
     "props": {
       "type": "object",
+      "description": "Component props. Each value is either a single prop descriptor (declarative components) or a group of prop descriptors keyed by piece name (imperative/multi-piece components like Toast).",
       "additionalProperties": {
-        "type": "object",
-        "required": ["type"],
-        "properties": {
-          "type": { "type": "string" },
-          "values": { "type": "array" },
-          "default": {},
-          "description": { "type": "string" },
-          "guidance": { "type": "object" },
-          "optional": { "type": "boolean" }
-        }
+        "anyOf": [
+          { "$ref": "#/$defs/propDescriptor" },
+          { "$ref": "#/$defs/propGroup" }
+        ]
       }
     },
     "states": {
@@ -46,7 +67,7 @@
     },
     "tokens": {
       "type": "object",
-      "description": "Maps the component's internal slot names to design tokens. Can include style declaration (subtle/solid/outline/ghost), palette mappings, slot templates, and direct token references.",
+      "description": "Maps the component's internal slot names to design tokens.",
       "additionalProperties": {
         "oneOf": [
           { "type": "string" },
@@ -57,7 +78,7 @@
     "accessibility": {
       "type": "object",
       "properties": {
-        "role": { "type": "string", "description": "ARIA role if the component has an inherent role. Omit for structurally neutral components like Card." },
+        "role": { "type": "string" },
         "keyboard": { "type": "array", "items": { "type": "string" } },
         "requirements": { "type": "array", "items": { "type": "string" } },
         "contrast": { "type": "string" }
@@ -65,10 +86,14 @@
     },
     "composition": {
       "type": "object",
+      "description": "How this component composes with others. Imperative components may add provider/hook placement guidance here.",
       "properties": {
         "allowedChildren": { "type": "array", "items": { "type": "string" } },
         "forbiddenChildren": { "type": "array", "items": { "type": "string" } },
-        "commonParents": { "type": "array", "items": { "type": "string" } }
+        "commonParents": { "type": "array", "items": { "type": "string" } },
+        "subcomponentOrdering": { "type": "string" },
+        "providerPlacement": { "type": "string" },
+        "hookUsage": { "type": "string" }
       }
     },
     "rules": {
@@ -102,22 +127,16 @@
     },
     "subcomponents": {
       "type": "array",
-      "description": "Sub-components that compose with this component (e.g. Input.LeadingIcon). Each subcomponent is a callable JSX element accessed via dot notation.",
+      "description": "Sub-components accessed via dot notation (e.g. Input.LeadingIcon).",
       "items": {
         "type": "object",
         "required": ["name", "description"],
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "Subcomponent name. Used as `ParentName.SubcomponentName` in JSX."
-          },
-          "description": {
-            "type": "string",
-            "description": "What the subcomponent does."
-          },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
           "props": {
             "type": "object",
-            "description": "Subcomponent props. Same shape as parent component props."
+            "additionalProperties": { "$ref": "#/$defs/propDescriptor" }
           },
           "rules": {
             "type": "object",
@@ -139,6 +158,50 @@
           }
         }
       }
+    },
+
+    "architecture": {
+      "type": "object",
+      "description": "For imperative or multi-piece components: describes the coordinated pieces (provider, hook, visual element).",
+      "properties": {
+        "summary": { "type": "string" },
+        "pieces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "role"],
+            "properties": {
+              "name": { "type": "string" },
+              "role": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "useToastAPI": {
+      "type": "object",
+      "description": "Documents the API surface of a hook-returned object (currently only used by Toast's useToast). Considered for promotion to a generic 'hookAPI' field if other hook-based components emerge.",
+      "properties": {
+        "description": { "type": "string" },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["signature", "description"],
+            "properties": {
+              "signature": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "behavior": {
+      "type": "object",
+      "description": "Free-form behavioral notes that don't fit prop or state definitions (queue, timing, animation lifecycles). Used by imperative components.",
+      "additionalProperties": { "type": "string" }
     }
   }
 }

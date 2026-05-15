@@ -6,13 +6,26 @@ import { resolve, join } from 'node:path'
  * Output: components/{name}/{name}.llm.md
  *
  * Format is intentionally terse — meant for LLM consumption, not human reading.
- * Different from human docs (which we'll generate separately when we add them).
  */
+
+type PropDescriptor = {
+  type: string
+  values?: any[]
+  default?: any
+  description?: string
+  guidance?: Record<string, string>
+  optional?: boolean
+  shape?: Record<string, PropDescriptor>
+}
+
+// A prop value is either a single descriptor (flat-props components) or
+// a group of descriptors (imperative components like Toast).
+type PropValue = PropDescriptor | Record<string, PropDescriptor>
 
 type Spec = {
   name: string
   description: string
-  props: Record<string, any>
+  props: Record<string, PropValue>
   states?: string[]
   tokens?: any
   rules?: { do?: string[]; dont?: string[] }
@@ -22,13 +35,32 @@ type Spec = {
   subcomponents?: Array<{
     name: string
     description: string
-    props?: Record<string, any>
+    props?: Record<string, PropDescriptor>
     rules?: { do?: string[]; dont?: string[] }
     examples?: Array<{ name: string; code: string; context?: string }>
   }>
+
+  // Imperative-component fields (Day 32, for Toast and similar)
+  architecture?: {
+    summary?: string
+    pieces?: Array<{ name: string; role: string }>
+  }
+  useToastAPI?: {
+    description?: string
+    methods?: Array<{ signature: string; description: string }>
+  }
+  behavior?: Record<string, string>
 }
 
-function formatPropLine(name: string, def: any): string {
+// ─── Prop rendering ─────────────────────────────────────────────────────────
+
+function isPropDescriptor(value: any): value is PropDescriptor {
+  // A descriptor has a string `type` field. A group is an object whose values
+  // are themselves descriptors, but the group itself has no `type`.
+  return value && typeof value === 'object' && typeof value.type === 'string'
+}
+
+function formatPropLine(name: string, def: PropDescriptor): string {
   const parts: string[] = [`${name}:`]
 
   if (def.type === 'enum' && def.values) {
@@ -48,12 +80,106 @@ function formatPropLine(name: string, def: any): string {
   return parts.join(' ')
 }
 
-function formatPropGuidance(def: any): string[] {
+function formatPropGuidance(def: PropDescriptor): string[] {
   if (!def.guidance) return []
   return Object.entries(def.guidance).map(
     ([value, desc]) => `  ${value} — ${desc}`
   )
 }
+
+function renderPropsFlat(props: Record<string, PropDescriptor>): string[] {
+  const lines: string[] = []
+  for (const [propName, def] of Object.entries(props)) {
+    lines.push(formatPropLine(propName, def))
+    const guidance = formatPropGuidance(def)
+    if (guidance.length) lines.push(...guidance)
+
+    // Render nested .shape (e.g. Toast's options.action)
+    if (def.shape) {
+      for (const [nestedName, nestedDef] of Object.entries(def.shape)) {
+        lines.push(`  ${formatPropLine(nestedName, nestedDef)}`)
+      }
+    }
+  }
+  return lines
+}
+
+function renderPropsSection(props: Record<string, PropValue>): string[] {
+  const lines: string[] = ['## Props', '']
+
+  // Detect: are all values descriptors (flat), or are they groups (imperative)?
+  const allDescriptors = Object.values(props).every(isPropDescriptor)
+
+  if (allDescriptors) {
+    // Original flat rendering
+    lines.push(...renderPropsFlat(props as Record<string, PropDescriptor>))
+  } else {
+    // Grouped rendering — each group becomes a subheading
+    for (const [groupName, groupValue] of Object.entries(props)) {
+      if (isPropDescriptor(groupValue)) {
+        // Mixed shape — render as flat prop directly
+        lines.push(formatPropLine(groupName, groupValue))
+        const guidance = formatPropGuidance(groupValue)
+        if (guidance.length) lines.push(...guidance)
+      } else {
+        // True group — subheading + nested props
+        lines.push('')
+        lines.push(`### ${groupName}`)
+        lines.push('')
+        lines.push(...renderPropsFlat(groupValue as Record<string, PropDescriptor>))
+      }
+    }
+  }
+
+  lines.push('')
+  return lines
+}
+
+// ─── Imperative-component section renderers ─────────────────────────────────
+
+function renderArchitecture(architecture: Spec['architecture']): string[] {
+  if (!architecture) return []
+  const lines: string[] = ['## Architecture', '']
+  if (architecture.summary) {
+    lines.push(architecture.summary)
+    lines.push('')
+  }
+  if (architecture.pieces?.length) {
+    for (const piece of architecture.pieces) {
+      lines.push(`**${piece.name}** — ${piece.role}`)
+      lines.push('')
+    }
+  }
+  return lines
+}
+
+function renderUseToastAPI(api: Spec['useToastAPI']): string[] {
+  if (!api) return []
+  const lines: string[] = ['## useToast API', '']
+  if (api.description) {
+    lines.push(api.description)
+    lines.push('')
+  }
+  if (api.methods?.length) {
+    for (const m of api.methods) {
+      lines.push(`\`${m.signature}\` — ${m.description}`)
+    }
+    lines.push('')
+  }
+  return lines
+}
+
+function renderBehavior(behavior: Spec['behavior']): string[] {
+  if (!behavior) return []
+  const lines: string[] = ['## Behavior', '']
+  for (const [key, description] of Object.entries(behavior)) {
+    lines.push(`**${key}** — ${description}`)
+    lines.push('')
+  }
+  return lines
+}
+
+// ─── Token rendering (unchanged) ────────────────────────────────────────────
 
 function formatStyleSlots(tokens: any): string {
   if (!tokens?.style_slots) return ''
@@ -75,6 +201,8 @@ function formatSlots(tokens: any): string {
   return lines.join('\n')
 }
 
+// ─── Main generator ─────────────────────────────────────────────────────────
+
 function generateLlmMd(spec: Spec): string {
   const lines: string[] = []
 
@@ -84,8 +212,7 @@ function generateLlmMd(spec: Spec): string {
   lines.push(spec.description)
   lines.push('')
 
-  // Import section — tells the model how to consume the component
-  // (Day 29 intervention: perceived-availability thesis test)
+  // Import section (Day 29 intervention)
   lines.push('## Import')
   lines.push('')
   lines.push('```jsx')
@@ -94,6 +221,10 @@ function generateLlmMd(spec: Spec): string {
   lines.push('')
   lines.push(`This component is part of the ai-native-ds package and is available as a callable React component.`)
   lines.push('')
+
+  // Architecture (imperative components only — before Usage so the reader
+  // knows there are multiple pieces before parsing prop groups)
+  lines.push(...renderArchitecture(spec.architecture))
 
   // Usage — lead with JSX example so model anchors on consumption pattern
   const firstExample = spec.examples?.[0]
@@ -105,10 +236,9 @@ function generateLlmMd(spec: Spec): string {
     lines.push('```')
     lines.push('')
   } else {
-    // Fallback: build a minimal usage from defaults
     const defaultProps = Object.entries(spec.props)
-      .filter(([_, def]: [string, any]) => def.default !== undefined)
-      .map(([name, def]: [string, any]) => `${name}="${def.default}"`)
+      .filter(([, def]) => isPropDescriptor(def) && def.default !== undefined)
+      .map(([name, def]) => `${name}="${(def as PropDescriptor).default}"`)
       .join(' ')
     lines.push('## Usage')
     lines.push('')
@@ -118,17 +248,13 @@ function generateLlmMd(spec: Spec): string {
     lines.push('')
   }
 
-  // Props
-  lines.push('## Props')
-  lines.push('')
-  for (const [propName, def] of Object.entries(spec.props)) {
-    lines.push(formatPropLine(propName, def))
-    const guidance = formatPropGuidance(def)
-    if (guidance.length) lines.push(...guidance)
-  }
-  lines.push('')
+  // Props (flat or grouped)
+  lines.push(...renderPropsSection(spec.props))
 
-  // States (if any beyond default)
+  // useToast API (Toast-specific for now)
+  lines.push(...renderUseToastAPI(spec.useToastAPI))
+
+  // States
   if (spec.states && spec.states.length > 1) {
     lines.push('## States')
     lines.push('')
@@ -136,7 +262,10 @@ function generateLlmMd(spec: Spec): string {
     lines.push('')
   }
 
-  // Token model — style→slot mapping is the highest-signal section
+  // Behavior (imperative components)
+  lines.push(...renderBehavior(spec.behavior))
+
+  // Token sections
   const styleSlots = formatStyleSlots(spec.tokens)
   if (styleSlots) {
     lines.push(styleSlots)
@@ -149,7 +278,6 @@ function generateLlmMd(spec: Spec): string {
     lines.push('')
   }
 
-  // Effects (e.g. Button's disabled_opacity)
   if (spec.tokens?.effects) {
     lines.push('## Effects')
     lines.push('')
@@ -195,7 +323,7 @@ function generateLlmMd(spec: Spec): string {
     lines.push('')
   }
 
-  // Subcomponents (if any)
+  // Subcomponents
   if (spec.subcomponents?.length) {
     lines.push('## Subcomponents')
     lines.push('')
@@ -229,7 +357,7 @@ function generateLlmMd(spec: Spec): string {
     }
   }
 
-  // Related (when to use something else)
+  // Related
   if (spec.related?.use_instead_when?.length) {
     lines.push('## Use instead when')
     lines.push('')
@@ -267,27 +395,6 @@ async function main() {
   }
 
   console.log(`\nGenerated ${count} LLM docs.`)
-}
-
-function buildUsageExample(spec: Spec): string {
-  // Prefer the first explicit example
-  if (spec.examples?.length && spec.examples[0]?.code) {
-    return spec.examples[0].code
-  }
-
-  // Fallback: construct from props with defaults
-  const propsList: string[] = []
-  for (const [propName, def] of Object.entries(spec.props)) {
-    if (def.default !== undefined && propName !== 'children') {
-      const v = typeof def.default === 'string' ? `"${def.default}"` : `{${def.default}}`
-      propsList.push(`${propName}=${v}`)
-    }
-  }
-  const propsStr = propsList.length ? ' ' + propsList.join(' ') : ''
-  const hasChildren = 'children' in spec.props
-  return hasChildren
-    ? `<${spec.name}${propsStr}>...</${spec.name}>`
-    : `<${spec.name}${propsStr} />`
 }
 
 main().catch(err => {
